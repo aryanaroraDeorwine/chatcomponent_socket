@@ -1,11 +1,11 @@
 import 'package:chat_component/chat_components/model/network_services/networking/base_model/base_model.dart';
 import 'package:chat_component/chat_components/model/network_services/networking/repo/api_repo.dart';
 import 'package:chat_component/chat_components/model/network_services/networking/result/language_extensions.dart';
+import 'package:chat_component/chat_components/view/widgets/pagination_view/pagination_view_screen.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -22,13 +22,12 @@ import '../../../model/models/chat_model/chat_model.dart';
 import '../../../model/models/message_model/message_model.dart';
 import '../../../model/models/picker_file_modal/picker_file_modal.dart';
 import '../../../model/models/user_model/user_model.dart';
-import '../../../model/network_services/firebase_database.dart';
 import '../../../model/network_services/networking/result/apiresult.dart';
 import '../../../model/randomkey/randomkey.dart';
 import '../../../model/services/chat_services.dart';
 import '../../../view/widgets/log_print/log_print_condition.dart';
 import '../../../view/widgets/toast_view/toast_view.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 
 class ChatViewController extends GetxController with WidgetsBindingObserver{
@@ -47,9 +46,6 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   /// messages box textfeild controller
   TextEditingController messageController = TextEditingController();
 
-  /// scrolling controller for message list view
-  ScrollController scrollController = ScrollController();
-
   /// textfeild focus
   FocusNode messageFocus = FocusNode();
 
@@ -66,11 +62,6 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
 
   RxBool isWizardWidgetGet = false.obs;
 
-  /// message model list
-  RxList<MessageModel> messages = <MessageModel>[].obs;
-  List<MessageModel> oldMessages = <MessageModel>[];
-  RxInt pageNo = 0.obs;
-
   /// permissions for camera and photos
   RxBool isPermissionCameraGranted = false.obs;
   RxBool isPermissionPhotosGranted = false.obs;
@@ -81,17 +72,9 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   /// typing status
   RxBool userTypingStatus = false.obs;
 
-  /// firebase functions file import
-  var firebase = FirebaseDataBase();
-
   /// firebase notification file import
   var firebaseNotification = FirebaseNotification();
 
-  /// message , typing , active status , presence listner
-  StreamSubscription<QuerySnapshot>? messageListener;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? typingListener;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?activeStatusListener;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? presenceListener;
 
   /// loading values
   RxBool isLoadingPreviousChats = true.obs;
@@ -103,9 +86,6 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
 
   /// dailog open boolean value
   RxBool isDialogOpen = false.obs;
-
-  /// chat room reference variable
-  DocumentReference<Map<String, dynamic>>? reference;
 
   /// chip messages list text
   List<String> suggestions = Get.find<ChatServices>().chatArguments.suggestionsMessages ?? <String>[
@@ -132,6 +112,14 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   RxString otherUserId = "".obs;
   RxString agoraChannelName = "".obs;
   RxString agoraToken = "".obs;
+
+  PaginationViewController<MessageModel> messagesPaginationController =  PaginationViewController(
+      showMessage: "No more messages found",
+      totalPageCont: 0,
+      onScrollDownDone: (bool value, int pageNumber) {},
+      itemList: <MessageModel>[].obs);
+
+  List<MessageModel> messagesList = <MessageModel>[];
 
 
   /// open attachments dialog from  message box(textfield)
@@ -168,8 +156,8 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
           "app_type": chatArguments.appType,
           "message": message.toJson()
         }
-        ..addIf(messages.isNotEmpty || chatRoomID.value.isNotEmpty, "chat_id", chatRoomID.value)
-        ..addIf(messages.isEmpty && chatArguments.appType == "carrier" && chatRoomID.value.isEmpty , "sent_to", otherUserId.value)
+        ..addIf(messagesPaginationController.itemList.isNotEmpty || chatRoomID.value.isNotEmpty, "chat_id", chatRoomID.value)
+        ..addIf(messagesPaginationController.itemList.isEmpty && chatArguments.appType == "carrier" && chatRoomID.value.isEmpty , "sent_to", otherUserId.value)
         );
 
         isWizardWidgetGet.call(true);
@@ -199,16 +187,16 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   void addReaction(int index, int messageIndex) {
     try {
       isReaction.value = isReaction.value;
-      messages[messageIndex].message?.reaction = index;
+      messagesPaginationController.itemList[messageIndex].message?.reaction = index;
       selectReactionIndex.value = "";
-      logPrint("select value is : ${selectReactionIndex.value} , ${messages[messageIndex].message?.reaction}");
+      logPrint("select value is : ${selectReactionIndex.value} , ${messagesPaginationController.itemList[messageIndex].message?.reaction}");
     } catch (e) {
       logPrint("error in updating reactions : $e ");
     }
   }
 
 
-  /// chip message send update message chatroom and messages list
+  /// chip message send update message chatroom and messagesPaginationController.itemList list
   Future<void> chipMessage(int index) async {
     String id = getRandomString();
     Message message = Message(
@@ -238,7 +226,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     else {
       try {
         // MessageModel loadingMessage = MessageModel(id: id,file: Files(fileName: result.files.first.name, fileMimeType: result.files.first.extension, fileType: FileTypes.document.name, fileUrl: result.files.first.path,isAdding: false), messageType: MessageType.file.name, sender: currentUserId.value, isSeen: false, time: DateTime.now().toUtc().toString());
-        // messages.add(loadingMessage);
+        // messagesPaginationController.itemList.add(loadingMessage);
         //
         // /// upload file in firebase storage
         // String? url = await firebase.addChatFiles(id, result.files.first.path!);
@@ -300,28 +288,35 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     }
   }
 
-  /// update typing status in chatroom
-  void typingStatus(bool status) {
-    firebase.userTypingStatus(chatRoomID.value, status, currentUserId.value);
-  }
+  // /// update typing status in chatroom
+  // void typingStatus(bool status) {
+  //   firebase.userTypingStatus(chatRoomID.value, status, currentUserId.value);
+  // }
 
   /// read all messages of chat room
   Future<void> updateChats() async {
     try {
-      logPrint("api called ");
       chatRoomID.value.isNotEmpty ?
       await apiRepo.getMessagesList(chatRoomId: chatRoomID.value,messagesBody: {
         "page_number":"1",
         "page_size":"20",
         "sort_by":"created_at",
-        "sort_order":"asc"
+        "sort_order":"desc"
       }).mapSuccess((value, msg) {
         PagedDataMessages<List<MessageModel>> pagedDataMessages = value;
-        messages.value = pagedDataMessages.data ?? [];
-        oldMessages = pagedDataMessages.data ?? [];
-        logPrint("vlaue it this is : ${checkImagesGrouping(messagesList: oldMessages)}");
-        chatRoomID.value = messages.first.id.toString();
-        pageNo.call(pagedDataMessages.currentPage);
+        pagedDataMessages.data ?? [];
+        messagesPaginationController.currentPage.value = pagedDataMessages.currentPage ?? 1;
+        messagesPaginationController.totalPageCont = findTotalPage(totalRecord: pagedDataMessages.total ?? 20,pageSize: pagedDataMessages.pageSize ?? 20);
+        messagesPaginationController.itemList.value = checkImagesGrouping(messagesList: pagedDataMessages.data ?? []);
+
+        messagesPaginationController.onScrollDownDone = (bool value, int pageNumber) async {
+          if (value) {
+            messagesPaginationController.isLoading.call(true);
+            await loadMoreMessages(pageNumber);
+            messagesPaginationController.isLoading.call(false);
+          }
+        };
+        chatRoomID.value = messagesPaginationController.itemList.first.chatId.toString();
         return ApiResult.success(data: value, message: msg);
       }).mapFailure((failure) async {
         return ApiResult.failure(failure: failure);
@@ -330,6 +325,28 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     } catch (e) {
       logPrint("error message fetch : $e");
     }
+  }
+
+  Future<void> loadMoreMessages(int pageNo) async {
+    await apiRepo.getMessagesList(chatRoomId: chatRoomID.value,messagesBody: {
+      "page_number":pageNo,
+      "page_size":"20",
+      "sort_by":"created_at",
+      "sort_order":"desc"
+    }).mapSuccess((value, msg) {
+      PagedDataMessages<List<MessageModel>> pagedDataMessages = value;
+      messagesPaginationController.itemList.insertAll(0,checkImagesGrouping(messagesList: pagedDataMessages.data ?? []));
+      return ApiResult.success(data: value, message: msg);
+    }).mapFailure((failure) async {
+      return ApiResult.failure(failure: failure);
+    });
+  }
+
+  int findTotalPage({required int totalRecord ,required int pageSize}){
+    final result = totalRecord/pageSize;
+    final resultRounded = (totalRecord/pageSize).round();
+    final hasDecimalPoint = result % 1 != 0;
+    return  hasDecimalPoint ? resultRounded + 1 : resultRounded;
   }
 
 
@@ -376,13 +393,6 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   @override
   Future<void> onClose() async {
     isScreenOn.value = false;
-
-    scrollController.dispose();
-    messageListener?.cancel();
-    typingListener?.cancel();
-    presenceListener?.cancel();
-    activeStatusListener?.cancel();
-
 
     super.onClose();
   }
@@ -498,38 +508,22 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.detached:
-        firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
-            isFirstUser.call, currentUserId.value);
-        updatePresence(PresenceStatus.offline.name);
+        // firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
+        //     isFirstUser.call, currentUserId.value);
+        // updatePresence(PresenceStatus.offline.name);
       case AppLifecycleState.resumed:
-        firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
-            isFirstUser.call, currentUserId.value);
-        updatePresence(PresenceStatus.online.name);
+        // firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
+        //     isFirstUser.call, currentUserId.value);
+        // updatePresence(PresenceStatus.online.name);
       case AppLifecycleState.paused:
-        firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
-            isFirstUser.call, currentUserId.value);
-        updatePresence(PresenceStatus.offline.name);
+        // firebase.userActiveChatroom(chatRoomID.value, isScreenOn.value,
+        //     isFirstUser.call, currentUserId.value);
+        // updatePresence(PresenceStatus.offline.name);
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
     }
   }
 
-  ///  chat room updates all functions of chatroom call here
-  Future<void> chatroomUpdates() async {
-    /// fetch chat room detail
-    chatRoomModel.value = await firebase.fetchChatRoom(chatRoomID.value);
-
-    /// chatroom reference
-    reference = await firebase.userActiveChatroomReference(chatRoomID.value);
-
-    /// call fetch all messages
-    updateChats();
-
-    scrollerListener();
-
-    /// update user prescnse in app
-    readPresence();
-  }
 
   /// update active status of users if he is online in chat room
   Future<void> updateActiveStatus() async {
@@ -552,8 +546,8 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
 
     try {
       DownloadHelper().createFolderAndDownloadFile(
-          url: chatArguments.imageBaseUrl + (messages[index].message?.file ?? ""),
-          fileName: messages[index].message?.file?.split("/").last ?? "",
+          url: chatArguments.imageBaseUrl + (messagesPaginationController.itemList[index].message?.file ?? ""),
+          fileName: messagesPaginationController.itemList[index].message?.file?.split("/").last ?? "",
           onSuccess: () {
             isDownloadingStart.value = false;
           },
@@ -566,46 +560,11 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     }
   }
 
-  void scrollerListener(){
-    scrollController.addListener(() async {
-      double maxScroll = scrollController.position.maxScrollExtent;
-      double currentScroll = scrollController.position.pixels;
-      if(oldMessages.isNotEmpty){
-        if (maxScroll == currentScroll) {
-          try {
-            oldMessages.clear();
-            isLoadingPreviousChats.value = false;
-            pageNo++;
-            await apiRepo.getMessagesList(chatRoomId: chatRoomID.value,messagesBody: {
-              "page_number":pageNo.value.toString(),
-              "page_size":"20",
-              "sort_by":"created_at",
-              "sort_order":"asc"
-            }).mapSuccess((value, msg) {
-              PagedDataMessages<List<MessageModel>> pagedDataMessages = value;
-              messages.addAll(pagedDataMessages.data ?? []);
-              oldMessages.addAll(pagedDataMessages.data ?? []);
-              chatRoomID.value = messages.first.id.toString();
-              pageNo.call(pagedDataMessages.currentPage);
-              return ApiResult.success(data: value, message: msg);
-            }).mapFailure((failure) async {
-              return ApiResult.failure(failure: failure);
-            });
-            isLoadingPreviousChats.value = true;
-          } catch (e) {
-            isLoadingPreviousChats.value = true;
-            logPrint("error message fetch : $e");
-          }
-        }
-      }
-    });
-  }
-
-  IO.Socket? socket;
+  io.Socket? socket;
 
   void socketConnect()async{
 
-    socket = IO.io(chatArguments.socketBaseUrl, <String, dynamic>{
+    socket = io.io(chatArguments.socketBaseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'forceNew':true,
       'autoConnect': false,
@@ -620,24 +579,42 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     socket!.on('message', (messageDataFromEvent) {
       logPrint("receive data $messageDataFromEvent");
       logPrint("receive data ${messageDataFromEvent.runtimeType}");
-      try{
+
+      try {
+        // Parse the incoming message data
         SocketReceiveModel socketReceiveModel = SocketReceiveModel.fromJson(messageDataFromEvent);
+
+        // Log message creation time
         logPrint("time is : ${socketReceiveModel.data?.createdAt}");
-        messages.add(socketReceiveModel.data ?? MessageModel());
-        chatRoomID.value = messages.first.id.toString();
-        logPrint("vlaue it this is : ${checkImagesGrouping(messagesList: messages)}");
-        // if(messageDataFromEvent["status"]==true && messageDataFromEvent["data"]["chat_id"].toString()==chatId.value.toString()){
-        //   try{
-        //     Message message =  Message.fromJson(messageDataFromEvent["data"]);
-        //     messageList.insert(0,message);
-        //   }catch(e){
-        //     print("chat add $e");
-        //   }
-        // }
-      }catch(e){
-        logPrint("error recive message : $e");
+
+        // Ensure data is valid before processing
+        if (socketReceiveModel.data != null) {
+          // Add the new message to the list
+          messagesPaginationController.itemList.add(socketReceiveModel.data!);
+
+          List<MessageModel> tempList = List.from(messagesPaginationController.itemList);
+          List<MessageModel> processedList = checkImagesGrouping(messagesList: tempList);
+
+          logPrint("messafge list length : ${messagesPaginationController.itemList.length} ,, ${processedList.length} ,, ${processedList.last.multiImages?.length}");
+
+          // Update the RxList with processed results
+          messagesPaginationController.itemList.clear();
+          messagesPaginationController.itemList.addAll(processedList);
+
+          // Update chatRoomID
+          if (messagesPaginationController.itemList.isNotEmpty) {
+            chatRoomID.value = messagesPaginationController.itemList.first.chatId.toString();
+          }
+        } else {
+          logPrint("Received empty message data");
+        }
+      } catch (e, stackTrace) {
+        // Detailed error logging
+        logPrint("error receiving message: $e");
+        logPrint("stack trace: $stackTrace");
       }
     });
+
   }
 
 
@@ -669,9 +646,6 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
        try{
          socketConnect();
          chatRoomID.value.isNotEmpty ? await updateChats() : null;
-         scrollerListener();
-         var list = checkImagesGrouping(messagesList: messages);
-         logPrint("values in list changes : $list");
        }catch(e){
          logPrint("error in socket connection : $e");
        }
@@ -784,17 +758,79 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   }
 
 
-  List<MessageModel> checkImagesGrouping({required List<MessageModel> messagesList}){
+  List<MessageModel> checkImagesGrouping({required List<MessageModel> messagesList}) {
+    List<int> index = [];
+    List<int> reciverIndex = [];
 
-    for(int i =0; i < messagesList.length-1 ; i++){
-      logPrint("indexs : ${messagesList[i].message?.toJson()}  , ,, ${( i+1 != messagesList.length-1 ? messagesList[i+1].message?.messageType == "image" : false)}");
-      if(messagesList[i].message?.messageType == "image" && ( i+1 != messagesList.length-1 ? messagesList[i+1].message?.messageType == "image" : false)){
-        messagesList[i].multiImages?.add(messagesList[i].message ?? Message());
-        messagesList[i].multiImages?.add(messagesList[i+1].message ?? Message());
+    for (int i = 0; i < messagesList.length; i++) {
+      var item = messagesList[i];
+      if (item.message?.messageType == "image" && item.userId == currentUserId.value) {
+        index.add(i);
+      } else if (item.message?.messageType == "image" && item.userId != currentUserId.value) {
+        reciverIndex.add(i);
       }
     }
-    return messagesList;
+
+    logPrint("indexes: $index");
+
+    // Combine indices and sort them to ensure ordered processing
+    List<int> allIndexes = [...index, ...reciverIndex]..sort();
+
+    // Process indices in batches
+    List<MessageModel> processedList = List.from(messagesList);
+    processIndices(0, allIndexes, processedList);
+
+    return processedList;
   }
+
+  void processIndices(int startIndex, List<int> indices, List<MessageModel> messagesList) {
+    if (startIndex >= indices.length) {
+      return; // Base case: no more indices to process
+    }
+
+    int bound = startIndex;
+    int count = 0;
+    List<int> toRemove = [];
+
+    // Find continuous ranges
+    for (int i = startIndex; i < indices.length; i++) {
+      if (i != indices.length - 1 && indices[i] + 1 == indices[i + 1]) {
+        count++;
+      } else {
+        if (count >= 3) {
+          toRemove.addAll(indices.getRange(bound, i + 1));
+          addData(indices[i], indices[bound], messagesList);
+        }
+        bound = i + 1;
+        count = 0;
+      }
+    }
+
+    // Process next batch
+    if (toRemove.isNotEmpty) {
+      toRemove.sort((a, b) => b.compareTo(a)); // Sort in descending order
+      for (int index in toRemove) {
+        messagesList.removeAt(index);
+      }
+    }
+
+    // Recurse to process remaining indices
+    processIndices(bound, indices, messagesList);
+  }
+
+  void addData(int endIndex, int startIndex, List<MessageModel> messagesList) {
+    // Combine multiImages and add messages
+    if (messagesList[endIndex].multiImages == null) {
+      messagesList[endIndex].multiImages = [];
+    }
+    for (int i = startIndex; i <= endIndex; i++) {
+      if (messagesList[i].multiImages != null) {
+        messagesList[endIndex].multiImages?.addAll(messagesList[i].multiImages ?? []);
+      }
+      messagesList[endIndex].multiImages?.add(messagesList[i].message ?? Message());
+    }
+  }
+
 
 
   uploadAudioFile(String path) async {

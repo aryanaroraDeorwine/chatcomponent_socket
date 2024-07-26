@@ -1,4 +1,5 @@
 
+import 'package:chat_component/chat_components/model/models/user_model/chat_user_model.dart';
 import 'package:chat_component/chat_components/model/network_services/networking/base_model/base_model.dart';
 import 'package:chat_component/chat_components/model/services/chat_services.dart';
 import 'package:chat_component/chat_components/view/widgets/log_print/log_print_condition.dart';
@@ -22,6 +23,12 @@ abstract class ApiClient {
   @GET("chats/{id}/messages")
   Future<PagedDataMessages<List<MessageModel>>> getMessagesList(
       @Path('id') String chatRoomId,
+      @Queries() Map<String, dynamic> queries
+      );
+
+
+  @GET("chats/")
+  Future<PagedDataMessages<List<ChatUserModal>>> getUsersList(
       @Queries() Map<String, dynamic> queries
       );
 

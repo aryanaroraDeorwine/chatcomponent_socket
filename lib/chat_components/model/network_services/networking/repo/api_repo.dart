@@ -1,4 +1,5 @@
 import 'package:chat_component/chat_components/model/models/message_model/message_model.dart';
+import 'package:chat_component/chat_components/model/models/user_model/chat_user_model.dart';
 import 'package:chat_component/chat_components/model/network_services/networking/result/apiresult.dart';
 import 'package:dio/dio.dart';
 import '../base_model/base_model.dart';
@@ -19,6 +20,15 @@ class ApiRepo {
         return ApiResult.compileMap(response);
       }).catchError((error)  {
         return  ApiResult.compileFailureError<PagedDataMessages<List<MessageModel>>>(error);
+      });
+
+  Future<ApiResult<PagedDataMessages<List<ChatUserModal>>>> getUsersList({required Map<String, dynamic> messagesBody}) async =>
+      client.getUsersList(
+          messagesBody
+      ).then((response) async {
+        return ApiResult.compileMap(response);
+      }).catchError((error)  {
+        return  ApiResult.compileFailureError<PagedDataMessages<List<ChatUserModal>>>(error);
       });
 
 }

@@ -364,7 +364,6 @@ class AudioPlayerView extends StatefulWidget {
   final int reaction;
   final bool isSender;
   final bool isSeen;
-  final bool visible;
   final bool isReaction;
   final List<String> reactionList;
   final VoidCallback onLongTap;
@@ -378,7 +377,6 @@ class AudioPlayerView extends StatefulWidget {
       required this.reaction,
       required this.isSender,
       required this.isSeen,
-      required this.visible,
       required this.isReaction,
       required this.reactionList,
       required this.onLongTap,
@@ -415,7 +413,7 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
   downloadFile() async {
     try {
       Permission.storage.isGranted;
-      String fileName = "${widget.chatController.messages[widget.index].message?.file?.split("/").last}${DateTime.now()}" ?? "";
+      String fileName = "${widget.chatController.messagesPaginationController.itemList[widget.index].message?.file?.split("/").last}${DateTime.now()}" ?? "";
       var tempDir = await getExternalStorageDirectory();
       HttpClient httpClient = HttpClient();
       File file = File('${tempDir?.path}/$fileName');

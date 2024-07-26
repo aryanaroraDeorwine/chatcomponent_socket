@@ -1,17 +1,20 @@
 import 'dart:io';
 import 'package:chat_component/chat_components/model/chatHelper/chat_helper.dart';
 import 'package:chat_component/chat_components/model/models/chat_view_args/chat_view_args.dart';
+import 'package:chat_component/chat_components/model/models/message_model/message_model.dart';
+import 'package:chat_component/chat_components/view/screens/chat_screen/view_holder/multi_image_views_screen.dart';
 import 'package:chat_component/chat_components/view/widgets/empty_data_view/empty_data_view.dart';
 import 'package:chat_component/chat_components/view/widgets/loader/loader_view.dart';
+import 'package:chat_component/chat_components/view/widgets/pagination_view/pagination_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import '../../../view_model/controller/chat_view_controller/chat_view_controller.dart';
 import '../../widgets/chat_message/audio_player_view/audio_player_view.dart';
 import '../../widgets/chat_message/date_view.dart';
+import '../../widgets/chat_message/multi_images_views.dart';
 import '../../widgets/user_detail_view_chat/user_details_view_chatscreen.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:easy_debounce/easy_debounce.dart';
 import '../../../model/function_helper/date_time_convertor/date_time_convertor.dart';
 import '../../widgets/chat_message/file_view.dart';
 import '../../widgets/chat_message/full_screen_video_player.dart';
@@ -112,7 +115,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
           Obx(() =>
           mainViewArgs.value.messageSuggestionEnable
               && controller.isLoadingChats.isFalse
-              ? controller.messages.isEmpty
+              ? controller.messagesPaginationController.itemList.isEmpty
               ? Container(
               margin: const EdgeInsets.only(left: 5),
               height: 55,
@@ -140,210 +143,175 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
     return Expanded(
       child: Obx(() =>
       controller.isLoadingChats.isFalse
-          ? controller.messages.isEmpty
+          ? controller.messagesPaginationController.itemList.isEmpty
           ? SizedBox(
           height: 300,
           child: Lottie.asset(
               ChatHelpers.instance.hello,
               package: 'chat_component'))
           :
-      ListView(
-          reverse: true,
-          padding: const EdgeInsets.symmetric(vertical: ChatHelpers.marginSizeExtraSmall),
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            ...List.generate(
-                controller.messages.length,
-                    (index) {
-                  return
-                    Column(
-                      children: [
-                        index == 0 ?
-                        DateView(
-                            date: DateTimeConvertor
-                                .dateTimeShowMessages(
-                                controller
-                                    .messages[index]
-                                    .createdAt ??
-                                    ""))
-                            : DateTime.parse(controller.messages[index - 1].createdAt ?? "").day != DateTime.parse(controller.messages[index - 1].createdAt ?? "").day
-                            ? DateView(
-                            date: DateTimeConvertor
-                                .dateTimeShowMessages(
-                                controller
-                                    .messages[index]
-                                    .createdAt ??
-                                    ""))
-                            : const SizedBox(),
-                        controller.messages[index].message?.messageType == 'text' ?
-                        MessageView(
-                          index: index,
-                          chatController: controller,
-                          onLongTap: () {
-                            controller
-                                .selectReactionIndex
-                                .value =
-                                index.toString();
-                            controller.isReaction
-                                .value =
-                            !controller.isReaction
-                                .value;
-                          },
-                          message: controller
-                              .messages[index].message
-                              ?.text ?? '',
-                          time: DateTimeConvertor
-                              .timeExt(
-                              controller
-                                  .messages[index]
-                                  .createdAt ?? ''),
-                          isSender: controller
-                              .messages[index].userId ==
-                              controller
-                                  .currentUserId
-                                  .value,
-                          isSeen: false,
-                          isReaction: controller
-                              .isReaction
+          PaginationView(
+              isReverse: true,
+              showItemList: controller.messagesPaginationController.itemList,
+              mainView: (BuildContext context, int index,MessageModel itemData) {
+                return Column(
+                  children: [
+                    index == 0 ?
+                    DateView(
+                        date: DateTimeConvertor
+                            .dateTimeShowMessages(
+                            itemData.createdAt ??
+                                ""))
+                        : DateTime.parse(itemData.createdAt ?? "").day != DateTime.parse(itemData.createdAt ?? "").day
+                        ? DateView(
+                        date: DateTimeConvertor
+                            .dateTimeShowMessages(
+                            itemData
+                                .createdAt ??
+                                ""))
+                        : const SizedBox(),
+                    itemData.message?.messageType == 'text' ?
+                    MessageView(
+                      index: index,
+                      chatController: controller,
+                      onLongTap: () {
+                        controller
+                            .selectReactionIndex
+                            .value =
+                            index.toString();
+                        controller.isReaction
+                            .value =
+                        !controller.isReaction
+                            .value;
+                      },
+                      message: itemData.message
+                          ?.text ?? '',
+                      time: DateTimeConvertor
+                          .timeExt(
+                          itemData
+                              .createdAt ?? ''),
+                      isSender: itemData.userId ==
+                          controller
+                              .currentUserId
                               .value,
-                          reactionList: controller
-                              .emoji,
-                          reaction: controller
-                              .messages[index]
-                              .message?.reaction ?? 7,
-                        )
-                            : controller
-                            .messages[index].message?.messageType ==
-                            FileTypes.image.name || controller
-                            .messages[index].message?.messageType ==
-                            FileTypes.video.name
-                            ? ImageView(
-                          isAdding: true,
-                          imageMessage: controller
-                              .messages[index]
-                              .message?.text ?? "",
-                          reaction: controller
-                              .messages[index]
-                              .message?.reaction ?? 7,
-                          time: DateTimeConvertor
-                              .timeExt(
-                              controller
-                                  .messages[index]
-                                  .createdAt ?? ""),
-                          image: controller.messages[index].message?.file ?? "",
-                          isSender: controller.messages[index].userId == controller.currentUserId.value,
-                          onTap: () => controller.messages[index].message?.file == FileTypes.video.name ?
-                          Get.to(
-                            FullScreenVideoPlayer(
-                              file: controller.messages[index].message?.file ?? '',
-                              chatController: controller, imageThumbnail: controller.messages[index].message?.file ?? "",
-                            ),
-                          )
-                              : Get.to(
-                            ViewImageAndPlayVideoScreen(
-                              file: controller.messages[index].message?.file ?? '',
-                              chatController: controller,
-                            ),
-                          ),
-                          isSeen: controller
-                              .messages[index]
-                              .message?.isSeen ?? false,
-                          isVisible: controller
-                              .messages[index]
-                              .message?.sender ==
-                              controller
-                                  .currentUserId
-                                  .value
-                              ? controller
-                              .messages.length -
-                              1 == index
-                              ? true
-                              : false
-                              : false,
-                          onLongPress: () {
-                            controller
-                                .selectReactionIndex
-                                .value =
-                                index.toString();
-                            controller.isReaction
-                                .value =
-                            !controller.isReaction
-                                .value;
-                          },
-                          index: index,
-                          chatController: controller,
-                          isVideo: controller.messages[index].message?.messageType == FileTypes.image.name ? false : true,
-                        ) : controller
-                            .messages[index].message?.fileType ==
-                            FileTypes.audio.name ?
-                        AudioPlayerView(
-                            audioUrl: controller
-                                .messages[index]
-                                .message?.file ??
-                                "",
-                            time: DateTimeConvertor
-                                .timeExt(
-                                controller
-                                    .messages[index]
-                                    .createdAt ?? ""),
-                            index: index,
-                            reaction: controller
-                                .messages[index]
-                                .message?.reaction ?? 7,
-                            isSender: controller.messages[index].message?.sender == controller.currentUserId.value,
-                            isSeen: controller.messages[index].message?.isSeen ?? false,
-                            visible: controller.messages[index].message?.sender == controller.currentUserId.value
-                                ? controller.messages.length - 1 == index
-                                ? true : false : false,
-                            isReaction: controller.isReaction.value,
-                            reactionList: controller.emoji,
-                            onLongTap: () {
-                              controller.selectReactionIndex.value = index.toString();
-                              controller.isReaction.value = !controller.isReaction.value;
-                            },
-                            chatController: controller)
-                            : FileView(
-                          isAdding: true,
-                          reaction: controller.messages[index].message?.reaction ?? 7,
-                          isSeen: controller.messages[index].message?.isSeen ?? false,
-                          isVisible: controller.messages[index].userId == controller.currentUserId.value
-                              ? controller.messages.length - 1 == index
-                              ? true : false : false,
-                          onLongPress: () {
-                            controller.selectReactionIndex.value = index.toString();
-                            controller.isReaction.value = !controller.isReaction.value;
-                          },
-                          index: index,
-                          chatController: controller,
-                          time:
-                          DateTimeConvertor
-                              .timeExt(controller.messages[index].createdAt ?? ""),
-                          fileName: controller.messages[index].message?.file ?? '',
-                          isSender: controller
-                              .messages[index]
-                              .userId ==
-                              controller
-                                  .currentUserId
-                                  .value,
+                      isSeen: false,
+                      isReaction: controller
+                          .isReaction
+                          .value,
+                      reactionList: controller
+                          .emoji,
+                      reaction: itemData
+                          .message?.reaction ?? 7,
+                    )
+                        : itemData.message?.messageType ==
+                        FileTypes.image.name || itemData.message?.messageType ==
+                        FileTypes.video.name
+                        ?
+                    itemData.multiImages?.isNotEmpty ?? false ?
+                    MultiImagesViews(multiImageList: itemData.multiImages ?? [], index: index, reaction: itemData
+                        .message?.reaction ?? 7, isSender: itemData.userId == controller.currentUserId.value,
+                      onTap: () => Get.to(
+                                    MultiImageViewsScreen(
+                                    imagesList: itemData.multiImages ?? [],
+                                    chatController: controller, isSender: itemData.userId == controller.currentUserId.value,),
+                      ),
+                      onLongPress: () {  }, chatController: controller,
+                      isSeen: itemData
+                        .message?.isSeen ?? false, time: DateTimeConvertor
+                        .timeExt(
+                        itemData
+                            .createdAt ?? ""),
+
+                    )
+                        :
+                    ImageView(
+                      isAdding: true,
+                      imageMessage: itemData
+                          .message?.text ?? "",
+                      reaction: itemData
+                          .message?.reaction ?? 7,
+                      time: DateTimeConvertor
+                          .timeExt(
+                          itemData
+                              .createdAt ?? ""),
+                      image: itemData.message?.file ?? "",
+                      isSender: itemData.userId == controller.currentUserId.value,
+                      onTap: () => itemData.message?.file == FileTypes.video.name ?
+                      Get.to(
+                        FullScreenVideoPlayer(
+                          file: itemData.message?.file ?? '',
+                          chatController: controller, imageThumbnail: itemData.message?.file ?? "",
                         ),
-                      ],
-                    );
-                }
-            ).reversed,
-            controller.isLoadingPreviousChats.isFalse ?
-            SizedBox(
-              height: 50,
-              child: Center(
-                child:  mainViewArgs.value.customLoader ?? controller.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? LoaderView(
-                  size: 30,
-                  loaderColor: controller.themeArguments
-                      ?.colorArguments?.mainColor ??
-                      ChatHelpers.mainColor,),
-              ),
-            ) : const SizedBox(),
-          ]
-      )
+                      )
+                          : Get.to(
+                        ViewImageAndPlayVideoScreen(
+                          file: itemData.message?.file ?? '',
+                          chatController: controller,
+                        ),
+                      ),
+                      isSeen: itemData
+                          .message?.isSeen ?? false,
+                      onLongPress: () {
+                        controller
+                            .selectReactionIndex
+                            .value =
+                            index.toString();
+                        controller.isReaction
+                            .value =
+                        !controller.isReaction
+                            .value;
+                      },
+                      index: index,
+                      chatController: controller,
+                      isVideo: itemData.message?.messageType == FileTypes.image.name ? false : true,
+                    )
+                        : itemData.message?.fileType ==
+                        FileTypes.audio.name ?
+                    AudioPlayerView(
+                        audioUrl: itemData
+                            .message?.file ??
+                            "",
+                        time: DateTimeConvertor
+                            .timeExt(
+                            itemData
+                                .createdAt ?? ""),
+                        index: index,
+                        reaction: itemData
+                            .message?.reaction ?? 7,
+                        isSender: itemData.message?.sender == controller.currentUserId.value,
+                        isSeen: itemData.message?.isSeen ?? false,
+                        isReaction: controller.isReaction.value,
+                        reactionList: controller.emoji,
+                        onLongTap: () {
+                          controller.selectReactionIndex.value = index.toString();
+                          controller.isReaction.value = !controller.isReaction.value;
+                        },
+                        chatController: controller)
+                        : FileView(
+                      isAdding: true,
+                      reaction: itemData.message?.reaction ?? 7,
+                      isSeen: itemData.message?.isSeen ?? false,
+                      onLongPress: () {
+                        controller.selectReactionIndex.value = index.toString();
+                        controller.isReaction.value = !controller.isReaction.value;
+                      },
+                      index: index,
+                      chatController: controller,
+                      time:
+                      DateTimeConvertor
+                          .timeExt(itemData.createdAt ?? ""),
+                      fileName: itemData.message?.file ?? '',
+                      isSender: itemData
+                          .userId ==
+                          controller
+                              .currentUserId
+                              .value,
+                    ),
+                  ],
+                );
+              },
+              pagingScrollController: controller.messagesPaginationController,
+              onRefresh: (){})
           : Center(
         child: mainViewArgs.value.customLoader ?? controller.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? LoaderView(
           size: 30,
@@ -364,11 +332,11 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
             children: [
               MessageField(
                 onChange: (String? value) {
-                  controller.typingStatus(true);
-                  EasyDebounce.debounce('TypingStatus',
-                      const Duration(
-                          milliseconds: 1000), () =>
-                          controller.typingStatus(false));
+                  // controller.typingStatus(true);
+                  // EasyDebounce.debounce('TypingStatus',
+                  //     const Duration(
+                  //         milliseconds: 1000), () =>
+                  //         controller.typingStatus(false));
                   return null;
                 },
                 height: 50,

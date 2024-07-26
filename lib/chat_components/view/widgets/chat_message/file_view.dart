@@ -15,7 +15,6 @@ class FileView extends StatelessWidget {
   final bool isSender;
   final bool isAdding;
   final bool isSeen;
-  final bool isVisible;
   final VoidCallback onLongPress;
   final ChatViewController chatController;
 
@@ -27,7 +26,6 @@ class FileView extends StatelessWidget {
       required this.index,
       required this.reaction,
       required this.isSeen,
-      required this.isVisible,
       required this.onLongPress,
       required this.chatController, required this.isAdding});
 

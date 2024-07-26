@@ -232,19 +232,19 @@ class PagedDataMessages<T> {
     this.total,
     this.count,
     this.currentPage,
-    this.lastPage,
+    this.pageSize,
     this.sortBy,
     this.sortOrder
   });
 
   T? data;
-  @JsonKey(name: '39')
+  @JsonKey(name: 'total_record_count')
   int? total;
   int? count;
   @JsonKey(name: 'page_number')
   int? currentPage;
   @JsonKey(name: 'page_size')
-  int? lastPage;
+  int? pageSize;
   @JsonKey(name: 'created_at')
   String? sortBy;
   @JsonKey(name: 'desc')

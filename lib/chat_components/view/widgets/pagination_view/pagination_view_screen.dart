@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
 
 import '../../../model/chatHelper/chat_helper.dart';
 import '../../../model/services/chat_services.dart';
@@ -14,19 +15,20 @@ class PaginationView<T> extends StatelessWidget {
   final Axis? scrollDirection;
   final PaginationViewController<T> pagingScrollController;
   final Function onRefresh;
-  const PaginationView({super.key, required this.showItemList,required this.mainView, this.sidePadding, this.scrollDirection,required this.pagingScrollController,required this.onRefresh});
+  final bool? isReverse;
+  const PaginationView({super.key,this.isReverse, required this.showItemList,required this.mainView, this.sidePadding, this.scrollDirection,required this.pagingScrollController,required this.onRefresh});
   @override
   Widget build(BuildContext context) {
     return ListView(
       controller: pagingScrollController.scrollController,
       physics:const AlwaysScrollableScrollPhysics(),
       padding: sidePadding??EdgeInsets.zero,
-      reverse: true,
+      reverse: isReverse ?? false,
       scrollDirection: scrollDirection ?? Axis.vertical,
       children: [
-        ...List.generate(showItemList.length, (index) => mainView(context, index , pagingScrollController.itemList.elementAt(index))).reversed,
+        ...List.generate(showItemList.length, (index) => mainView(context, index , pagingScrollController.itemList.elementAt(index))).reversed ,
         Obx(()=>Padding(
-          padding:const EdgeInsets.only(bottom: 20.0,top: 10),
+          padding:const EdgeInsets.only(bottom: 10.0,top: 20),
           child: Visibility(
             visible: pagingScrollController.isLoading.value,
             child: Row(
@@ -36,7 +38,7 @@ class PaginationView<T> extends StatelessWidget {
               children: [
                 Text("Loading".tr,style: ChatHelpers.instance.styleSemiBold(ChatHelpers.fontSizeLarge, ChatHelpers.black),),
                 const SizedBox(width: ChatHelpers.marginSizeExtraSmall,),
-                Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? const LoaderView(size: 10,loaderColor: ChatHelpers.mainColor)
+                Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? const LoaderView(size: 25,loaderColor: ChatHelpers.mainColor)
               ],
             ),
           ),

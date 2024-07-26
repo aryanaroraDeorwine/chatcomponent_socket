@@ -18,7 +18,6 @@ class ImageView extends StatelessWidget {
   final bool isSender;
   final bool isSeen;
   final bool isAdding;
-  final bool isVisible;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   final ChatViewController chatController;
@@ -31,7 +30,6 @@ class ImageView extends StatelessWidget {
       required this.isSender,
       required this.onTap,
       required this.isSeen,
-      required this.isVisible,
       required this.onLongPress,
       required this.chatController,
       required this.index,

@@ -64,7 +64,7 @@ class MessageModel {
   String? createdAt;
   dynamic deletedAt;
   Message? message;
-  List<Message>? multiImages;
+  List<Message> ?multiImages;
   String? userType;
   dynamic status;
   String? updatedAt;
@@ -83,31 +83,37 @@ class MessageModel {
     this.updatedAt,
   });
 
-  factory MessageModel.fromJson(Map<String, dynamic> json) => MessageModel(
-    id: json["id"],
-    chatId: json["chat_id"],
-    userId: json["user_id"],
-    widget: json["widget"] == null ? null : WizardWidget.fromJson(json["widget"]),
-    createdAt: json["created_at"],
-    deletedAt: json["deleted_at"],
-    message: json["message"] == null ? null : Message.fromJson(json["message"]),
-    userType: json["user_type"],
-    status: json["status"],
-    updatedAt: json["updated_at"],
-  );
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      id: json["id"],
+      chatId: json["chat_id"],
+      userId: json["user_id"],
+      widget: json["widget"] == null ? null : WizardWidget.fromJson(json["widget"]),
+      createdAt: json["created_at"],
+      deletedAt: json["deleted_at"],
+      message: json["message"] == null ? null : Message.fromJson(json["message"]),
+      multiImages: json["multi_images"] != null ? List<Message>.from(json["multi_images"].map((x) => Message.fromJson(x))) : [],
+      userType: json["user_type"],
+      status: json["status"],
+      updatedAt: json["updated_at"],
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "chat_id": chatId,
-    "user_id": userId,
-    "widget": widget?.toJson(),
-    "created_at": createdAt,
-    "deleted_at": deletedAt,
-    "message": message?.toJson(),
-    "user_type": userType,
-    "status": status,
-    "updated_at": updatedAt,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "chat_id": chatId,
+      "user_id": userId,
+      "widget": widget?.toJson(),
+      "created_at": createdAt,
+      "deleted_at": deletedAt,
+      "message": message?.toJson(),
+      "multi_images": multiImages != null ? List<dynamic>.from(multiImages!.map((x) => x.toJson())) : null,
+      "user_type": userType,
+      "status": status,
+      "updated_at": updatedAt,
+    };
+  }
 }
 
 

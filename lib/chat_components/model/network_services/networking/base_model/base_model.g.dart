@@ -184,10 +184,10 @@ PagedDataMessages<T> _$PagedDataMessagesFromJson<T>(
 ) =>
     PagedDataMessages<T>(
       data: _$nullableGenericFromJson(json['data'], fromJsonT),
-      total: (json['39'] as num?)?.toInt(),
+      total: (json['total_record_count'] as num?)?.toInt(),
       count: (json['count'] as num?)?.toInt(),
       currentPage: (json['page_number'] as num?)?.toInt(),
-      lastPage: (json['page_size'] as num?)?.toInt(),
+      pageSize: (json['page_size'] as num?)?.toInt(),
       sortBy: json['created_at'] as String?,
       sortOrder: json['desc'] as String?,
     );
@@ -198,10 +198,10 @@ Map<String, dynamic> _$PagedDataMessagesToJson<T>(
 ) =>
     <String, dynamic>{
       'data': _$nullableGenericToJson(instance.data, toJsonT),
-      '39': instance.total,
+      'total_record_count': instance.total,
       'count': instance.count,
       'page_number': instance.currentPage,
-      'page_size': instance.lastPage,
+      'page_size': instance.pageSize,
       'created_at': instance.sortBy,
       'desc': instance.sortOrder,
     };

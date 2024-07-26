@@ -53,5 +53,3 @@ class WizardWidget{
   WizardWidget({required this.isWizardWidgetEnable,this.wizardWidget});
 }
 
-
-

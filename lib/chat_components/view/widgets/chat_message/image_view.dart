@@ -165,8 +165,6 @@ class ImageView extends StatelessWidget {
                                         width: 220,
                                         child: cachedNetworkImage(
                                             isProfile: false,
-                                            height: 220,
-                                            width: 220,
                                             url: image),
                                       ),
                                       isVideo ?  SizedBox(

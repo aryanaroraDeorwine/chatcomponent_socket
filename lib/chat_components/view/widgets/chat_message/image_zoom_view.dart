@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../model/chatHelper/chat_helper.dart';
 import '../../../view_model/controller/chat_view_controller/chat_view_controller.dart';
+import '../cached_network_imagewidget/cached_network_image_widget.dart';
 
 
 class ViewImageAndPlayVideoScreen extends StatelessWidget {
@@ -52,7 +53,10 @@ class ViewImageAndPlayVideoScreen extends StatelessWidget {
                     onDoubleTap: handleDoubleTap,
                     child: InteractiveViewer(
                       transformationController: transformationController,
-                      child: Image.network(width: MediaQuery.of(context).size.width,file,),
+                      child: cachedNetworkImage(
+                          fit: BoxFit.fitWidth,
+                          isProfile: false,
+                          url: file ),
                     ),
                   ),
                 ),

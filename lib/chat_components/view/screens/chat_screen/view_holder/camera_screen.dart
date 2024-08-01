@@ -64,183 +64,186 @@ class CameraScreen extends StatelessWidget {
   }
 
   Widget _buildImageListPage(BuildContext context, CameraScnController controller) {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      color: ChatHelpers.black,
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      child: controller.imageList.isNotEmpty
-          ? ListView(
-        shrinkWrap: true,
-        scrollDirection: Axis.horizontal,
-        physics: const NeverScrollableScrollPhysics(),
-        children: List.generate(
-          controller.isCropped.isTrue ? controller.cropImageList.length : controller.imageList.length,
-              (index) => SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: controller.isVideoRecorded.isTrue ? MediaQuery.of(context).size.height * 0.08 : 0,
-                  left: 0,
-                  right: 0,
-                  child: SizedBox(
-                    height: controller.isVideoRecorded.isTrue ? MediaQuery.of(context).size.height * 0.9 : MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    child: controller.isVideoRecorded.isTrue
-                        ? AspectRatio(
-                      aspectRatio: 9 / 16,
-                      child: Chewie(
-                        controller: controller.chewieController,
+    return Obx(() {
+      logPrint("value of isCroped : ${controller.isCropped.value}");
+      return Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        color: ChatHelpers.black,
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+        child: controller.imageList.isNotEmpty
+            ? ListView(
+          shrinkWrap: true,
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          children: List.generate(
+            controller.isCropped.isTrue ? controller.cropImageList.length : controller.imageList.length,
+                (index) => SizedBox(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: controller.isVideoRecorded.isTrue ? MediaQuery.of(context).size.height * 0.08 : 0,
+                    left: 0,
+                    right: 0,
+                    child: SizedBox(
+                      height: controller.isVideoRecorded.isTrue ? MediaQuery.of(context).size.height * 0.9 : MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      child: controller.isVideoRecorded.isTrue
+                          ? AspectRatio(
+                        aspectRatio: 9 / 16,
+                        child: Chewie(
+                          controller: controller.chewieController,
+                        ),
+                      )
+                          : Image.file(
+                        File(
+                          controller.isCropped.isTrue
+                              ? (controller.cropImageList[controller.selectedImageIndex.value].file?.path ?? "")
+                              : (controller.imageList[controller.selectedImageIndex.value].file?.path ?? ""),
+                        ),
+                        fit: BoxFit.fitWidth,
                       ),
-                    )
-                        : Image.file(
-                      File(
-                        controller.isCropped.isTrue
-                            ? (controller.cropImageList[controller.selectedImageIndex.value].file?.path ?? "")
-                            : (controller.imageList[controller.selectedImageIndex.value].file?.path ?? ""),
-                      ),
-                      fit: BoxFit.fitWidth,
                     ),
                   ),
-                ),
-                controller.isVideoRecorded.isTrue
-                    ? const SizedBox()
-                    : Positioned(
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(ChatHelpers.marginSizeDefault),
-                        child: CircleIconButton(
-                          height: 50,
-                          width: 50,
-                          onTap: () => controller.cropImage(index),
-                          isImage: false,
-                          icons: Icons.crop,
-                          boxColor: ChatHelpers.mainColor,
-                          colors: ChatHelpers.white,
-                          shapeRec: false,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(ChatHelpers.marginSizeDefault),
-                        child: CircleIconButton(
-                          height: 50,
-                          width: 50,
-                          onTap: () => controller.drawImage(index),
-                          isImage: true,
-                          image: ChatHelpers.instance.scribbleIcon,
-                          isImageText: false,
-                          boxColor: ChatHelpers.mainColor,
-                          colors: ChatHelpers.white,
-                          shapeRec: false,
-                          padding: 0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: controller.imageList.length == 1
-                      ? MediaQuery.of(context).size.height * 0.88 - MediaQuery.of(context).viewInsets.bottom
-                      : MediaQuery.of(context).size.height * 0.79 - MediaQuery.of(context).viewInsets.bottom,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.width,
-                    color: ChatHelpers.black.withOpacity(0.4),
-                  ),
-                ),
-                controller.imageList.length == 1 || controller.imageList.isEmpty
-                    ? const SizedBox()
-                    : Positioned(
-                  top: MediaQuery.of(context).size.height * 0.8 - MediaQuery.of(context).viewInsets.bottom,
-                  left: MediaQuery.of(context).size.width * 0.05,
-                  right: MediaQuery.of(context).size.width * 0.05,
-                  child: Container(
-                    height: 50,
-                    alignment: Alignment.center,
-                    child: ListView(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      children: List.generate(
-                        controller.imageList.length,
-                            (index) => GestureDetector(
-                          onTap: () => controller.selectedImageIndex.value = index,
-                          child: Container(
+                  controller.isVideoRecorded.isTrue
+                      ? const SizedBox()
+                      : Positioned(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top:ChatHelpers.marginSizeDefault,left: ChatHelpers.marginSizeDefault),
+                          child: CircleIconButton(
                             height: 50,
                             width: 50,
-                            color: controller.selectedImageIndex.value == index
-                                ? ChatHelpers.mainColorLight
-                                : ChatHelpers.white,
-                            padding: const EdgeInsets.all(2),
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            child: FadeInImage(
-                              fit: BoxFit.cover,
-                              placeholder: MemoryImage(kTransparentImage),
-                              image: FileImage(File(controller.imageList[index].file?.path ?? "")),
+                            onTap: () => controller.cropImage(index),
+                            isImage: false,
+                            icons: Icons.crop,
+                            boxColor: ChatHelpers.mainColor,
+                            colors: ChatHelpers.white,
+                            shapeRec: false,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top:ChatHelpers.marginSizeDefault,left: ChatHelpers.marginSizeDefault),
+                          child: CircleIconButton(
+                            height: 50,
+                            width: 50,
+                            onTap: () => controller.drawImage(index),
+                            isImage: true,
+                            image: ChatHelpers.instance.scribbleIcon,
+                            isImageText: false,
+                            boxColor: ChatHelpers.mainColor,
+                            colors: ChatHelpers.white,
+                            shapeRec: false,
+                            padding: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: controller.imageList.length == 1
+                        ? MediaQuery.of(context).size.height * 0.88 - MediaQuery.of(context).viewInsets.bottom
+                        : MediaQuery.of(context).size.height * 0.79 - MediaQuery.of(context).viewInsets.bottom,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.width,
+                      color: ChatHelpers.black.withOpacity(0.4),
+                    ),
+                  ),
+                  controller.imageList.length == 1 || controller.imageList.isEmpty
+                      ? const SizedBox()
+                      : Positioned(
+                    top: MediaQuery.of(context).size.height * 0.8 - MediaQuery.of(context).viewInsets.bottom,
+                    left: MediaQuery.of(context).size.width * 0.05,
+                    right: MediaQuery.of(context).size.width * 0.05,
+                    child: Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      child: ListView(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        children: List.generate(
+                          controller.imageList.length,
+                              (index) => GestureDetector(
+                            onTap: () => controller.selectedImageIndex.value = index,
+                            child: Container(
+                              height: 50,
+                              width: 50,
+                              color: controller.selectedImageIndex.value == index
+                                  ? ChatHelpers.mainColorLight
+                                  : ChatHelpers.white,
+                              padding: const EdgeInsets.all(2),
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              child: FadeInImage(
+                                fit: BoxFit.cover,
+                                placeholder: MemoryImage(kTransparentImage),
+                                image: FileImage(File(controller.imageList[index].file?.path ?? "")),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 10 + MediaQuery.of(context).viewInsets.bottom,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      children: [
-                        MessageField(
-                          onChange: (String? value) {
-                            return value;
-                          },
-                          height: 50,
-                          width: MediaQuery.of(context).size.width * 0.80,
-                          controller: controller.messageControllerList[controller.selectedImageIndex.value],
-                          hintText: 'Enter Message',
-                          onValidators: (String? value) => null,
-                          isFocused: true,
-                          maxLines: 5,
-                        ),
-                        CircleIconButton(
-                          height: 50,
-                          width: 50,
-                          boxColor: ChatHelpers.mainColorLight,
-                          isImage: false,
-                          icons: Icons.send,
-                          colors: ChatHelpers.white,
-                          onTap: controller.sendOnTap,
-                        ),
-                        const SizedBox(width: ChatHelpers.marginSizeExtraSmall),
-                      ],
+                  Positioned(
+                    bottom: 10 + MediaQuery.of(context).viewInsets.bottom,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        children: [
+                          controller.isImageWithText.isTrue ?  MessageField(
+                            onChange: (String? value) {
+                              return value;
+                            },
+                            height: 50,
+                            width: MediaQuery.of(context).size.width * 0.80,
+                            controller: controller.messageControllerList[controller.selectedImageIndex.value],
+                            hintText: 'Enter Message',
+                            onValidators: (String? value) => null,
+                            isFocused: true,
+                            maxLines: 5,
+                          ) : const Spacer(),
+                          CircleIconButton(
+                            height: 50,
+                            width: 50,
+                            boxColor: ChatHelpers.mainColorLight,
+                            isImage: false,
+                            icons: Icons.send,
+                            colors: ChatHelpers.white,
+                            onTap: controller.sendOnTap,
+                          ),
+                          const SizedBox(width: ChatHelpers.marginSizeSmall),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ) : Center(child: Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? const LoaderView(loaderColor: ChatHelpers.mainColor)),
-    );
+        ) : Center(child: Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customLoaderWidgets ?? const LoaderView(loaderColor: ChatHelpers.mainColor)),
+      );
+    });
   }
 
   Widget _buildCameraPage(BuildContext context, CameraScnController controller) {
-    return GestureDetector(
-        onVerticalDragUpdate: (DragUpdateDetails drag) {
-          DebounceHelper.instance.debounceFunction(onDebounceCall: (){
-            if (drag.delta.dy > 0) {
-              logPrint("flips ");
-              controller.onCameraSwitchTap();
-            } else if (drag.delta.dy < 0) {
-              logPrint("flips ");
-              controller.onCameraSwitchTap();
-            }
-          },duration: const Duration(milliseconds: 250));
-        },
-      onHorizontalDragUpdate: (DragUpdateDetails drag) {
+    return Obx(() => GestureDetector(
+      onVerticalDragUpdate: (DragUpdateDetails drag) {
         DebounceHelper.instance.debounceFunction(onDebounceCall: (){
+          if (drag.delta.dy > 0) {
+            logPrint("flips ");
+            controller.onCameraSwitchTap();
+          } else if (drag.delta.dy < 0) {
+            logPrint("flips ");
+            controller.onCameraSwitchTap();
+          }
+        },duration: const Duration(milliseconds: 250));
+      },
+      onHorizontalDragUpdate: (DragUpdateDetails drag) {
+        controller.isVideoSendEnable.isTrue ? DebounceHelper.instance.debounceFunction(onDebounceCall: (){
           if (drag.delta.dx > 0) {
             if(controller.pageCameraIndex.value == 1){
               controller.pageViewCameraController.animateToPage(0, duration: const Duration(milliseconds: 1), curve: Curves.ease);
@@ -250,7 +253,7 @@ class CameraScreen extends StatelessWidget {
               controller.pageViewCameraController.animateToPage(1, duration: const Duration(milliseconds: 1), curve: Curves.ease);
             }
           }
-        },duration: const Duration(milliseconds: 250));
+        },duration: const Duration(milliseconds: 250)) : null ;
       },
       child: Column(
         children: [
@@ -433,7 +436,7 @@ class CameraScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () => controller.pageViewCameraController.animateToPage(0,duration: const Duration(milliseconds: 1),curve: Curves.ease),
                 child: Container(
-                  padding: const EdgeInsets.all(ChatHelpers.marginSizeSmall),
+                  padding: const EdgeInsets.symmetric(vertical: ChatHelpers.marginSizeExtraSmall,horizontal: ChatHelpers.marginSizeSmall),
                   decoration: BoxDecoration(
                       color: controller.pageCameraIndex.value == 0 ? ChatHelpers.white : ChatHelpers.transparent,
                       borderRadius: BorderRadius.circular(ChatHelpers.circularImage)
@@ -441,11 +444,11 @@ class CameraScreen extends StatelessWidget {
                   child: Text("Photo",style: ChatHelpers.instance.styleMedium(ChatHelpers.fontSizeDefault,controller.pageCameraIndex.value == 0 ? ChatHelpers.mainColor : ChatHelpers.white),),
                 ),
               ),
-              Get.find<ChatServices>().chatArguments.isVideoSendEnable ?  const SizedBox(width: ChatHelpers.marginSizeSmall,) : const SizedBox(),
-              Get.find<ChatServices>().chatArguments.isVideoSendEnable ?  GestureDetector(
+              controller.isVideoSendEnable.isTrue ?  const SizedBox(width: ChatHelpers.marginSizeSmall,) : const SizedBox(),
+              controller.isVideoSendEnable.isTrue ?  GestureDetector(
                 onTap: () => controller.pageViewCameraController.animateToPage(1,duration: const Duration(milliseconds: 1),curve: Curves.ease),
                 child: Container(
-                  padding: const EdgeInsets.all(ChatHelpers.marginSizeSmall),
+                  padding: const EdgeInsets.symmetric(vertical: ChatHelpers.marginSizeExtraSmall,horizontal: ChatHelpers.marginSizeSmall),
                   decoration: BoxDecoration(
                       color: controller.pageCameraIndex.value == 1 ? ChatHelpers.white : ChatHelpers.transparent,
                       borderRadius: BorderRadius.circular(ChatHelpers.circularImage)
@@ -455,7 +458,7 @@ class CameraScreen extends StatelessWidget {
               ) : const SizedBox()
             ],
           ),
-          const SizedBox(height: ChatHelpers.marginSizeExtraSmall),
+          const SizedBox(height: ChatHelpers.marginSizeSmall),
           ImageListView(
             height: MediaQuery.of(context).size.width * 0.2,
             width: MediaQuery.of(context).size.width * 0.2,
@@ -464,7 +467,7 @@ class CameraScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

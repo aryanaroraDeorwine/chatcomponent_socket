@@ -37,12 +37,13 @@ class BottomViewArgs{
   bool isAttachmentSendEnable;
   bool isCameraImageSendEnable;
   bool isVideoSendEnable;
+  bool isImageWithText;
   Widget Function(BuildContext context,VoidCallback onSendTap)? customSendBtn;
   Widget Function(BuildContext context,VoidCallback onCameraTap)? customCameraBtn;
   Widget Function({required BuildContext context,required VoidCallback onCameraTap,required VoidCallback onSendTap,required TextEditingController messageController,VoidCallback? onDocumentTap,VoidCallback? onAttachmentTap})? customBottomView;
   Widget Function({required BuildContext context,required VoidCallback onCameraTap,required VoidCallback? onGalleryTap,required VoidCallback? onDocumentTap,required VoidCallback? onRecorderTap})? customAttachmentView;
 
-  BottomViewArgs({this.customSendBtn,this.customCameraBtn,required this.isAttachmentSendEnable,required this.isCameraImageSendEnable,required this.isVideoSendEnable,this.customBottomView,this.customAttachmentView});
+  BottomViewArgs({required this.isImageWithText,this.customSendBtn,this.customCameraBtn,required this.isAttachmentSendEnable,required this.isCameraImageSendEnable,required this.isVideoSendEnable,this.customBottomView,this.customAttachmentView});
 
 }
 

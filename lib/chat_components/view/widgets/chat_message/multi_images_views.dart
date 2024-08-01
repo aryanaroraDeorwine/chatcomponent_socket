@@ -154,8 +154,6 @@ class MultiImagesViews extends StatelessWidget {
                                             ),
                                             child: cachedNetworkImage(
                                                 isProfile: false,
-                                                height: 100,
-                                                width: 100,
                                                 url: multiImageList[index].file ?? ""),
                                           ),
                                           Container(
@@ -190,8 +188,6 @@ class MultiImagesViews extends StatelessWidget {
                                         ),
                                         child: cachedNetworkImage(
                                             isProfile: false,
-                                            height: 100,
-                                            width: 100,
                                             url: multiImageList[index].file ?? ""),
                                       )
                                   )

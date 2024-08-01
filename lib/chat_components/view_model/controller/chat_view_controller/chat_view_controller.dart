@@ -60,7 +60,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   RxBool isUserId = false.obs;
   RxBool isReaction = false.obs;
 
-  RxBool isWizardWidgetGet = false.obs;
+  RxBool isWizardWidgetGet = true.obs;
 
   /// permissions for camera and photos
   RxBool isPermissionCameraGranted = false.obs;
@@ -156,11 +156,11 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
           "app_type": chatArguments.appType,
           "message": message.toJson()
         }
-        ..addIf(messagesPaginationController.itemList.isNotEmpty || chatRoomID.value.isNotEmpty, "chat_id", chatRoomID.value)
+        // ..addIf(messagesPaginationController.itemList.isNotEmpty || chatRoomID.value.isNotEmpty, "chat_id", chatRoomID.value)
         ..addIf(messagesPaginationController.itemList.isEmpty && chatArguments.appType == "carrier" && chatRoomID.value.isEmpty , "sent_to", otherUserId.value)
         );
 
-        isWizardWidgetGet.call(true);
+        // isWizardWidgetGet.call(true);
 
         // firebaseNotification.sendNotification("", currentUser.value, users.value.deviceToken ?? "", CallModel(), true, message, chatRoomID.value, chatArguments.firebaseServerKey, users.value, CallArguments(
         //     agoraChannelName: '',
@@ -258,7 +258,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   }
 
   /// pick photo form gallery send photo in chats function
-  Future<void> photoPermission() async {
+  Future<void> photoPermission({required bool isImageWithText,required bool isVideoSendEnable}) async {
     PermissionStatus photosStatus = await Permission.photos.status;
     isDialogOpen.value = false;
     if (photosStatus.isGranted) {
@@ -268,7 +268,11 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
 
       if (image.value.path != "") {
 
-        Get.toNamed(ChatHelpers.cameraScreen,arguments: image.value)?.
+        Get.toNamed(ChatHelpers.cameraScreen,arguments: {
+          "image":image.value,
+          "isVideoSendEnable": isVideoSendEnable,
+          "isImageWithText":isImageWithText
+        })?.
         then((value) async {
           logPrint("Image get form back : ${value.toString()}");
           imageList.value = value["ImageList"];
@@ -307,8 +311,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
         pagedDataMessages.data ?? [];
         messagesPaginationController.currentPage.value = pagedDataMessages.currentPage ?? 1;
         messagesPaginationController.totalPageCont = findTotalPage(totalRecord: pagedDataMessages.total ?? 20,pageSize: pagedDataMessages.pageSize ?? 20);
-        messagesPaginationController.itemList.value = checkImagesGrouping(messagesList: pagedDataMessages.data ?? []);
-
+        messagesPaginationController.itemList.value = checkImagesGrouping(messagesList: pagedDataMessages.data?.reversed.toList() ?? []);
         messagesPaginationController.onScrollDownDone = (bool value, int pageNumber) async {
           if (value) {
             messagesPaginationController.isLoading.call(true);
@@ -335,7 +338,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
       "sort_order":"desc"
     }).mapSuccess((value, msg) {
       PagedDataMessages<List<MessageModel>> pagedDataMessages = value;
-      messagesPaginationController.itemList.insertAll(0,checkImagesGrouping(messagesList: pagedDataMessages.data ?? []));
+      messagesPaginationController.itemList.insertAll(0,checkImagesGrouping(messagesList: pagedDataMessages.data?.reversed.toList() ?? []));
       return ApiResult.success(data: value, message: msg);
     }).mapFailure((failure) async {
       return ApiResult.failure(failure: failure);
@@ -405,8 +408,12 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
     super.onInit();
   }
 
-  Future<void> goToCameraScreen() async {
-    Get.toNamed(ChatHelpers.cameraScreen,arguments: File(""))?.
+  Future<void> goToCameraScreen({required bool isImageWithText,required bool isVideoSendEnable}) async {
+    Get.toNamed(ChatHelpers.cameraScreen,arguments: {
+      "image": File(""),
+      "isVideoSendEnable": isVideoSendEnable,
+      "isImageWithText":isImageWithText
+    })?.
     then((value) async {
       logPrint("Image get form back : ${value.toString()}");
       imageList.value = value["ImageList"] ?? [];
@@ -771,63 +778,58 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
       }
     }
 
-    logPrint("indexes: $index");
+    // Perform grouping operations
+    messagesList = groupMessages(index, messagesList);
+    messagesList = groupMessages(reciverIndex, messagesList);
 
-    // Combine indices and sort them to ensure ordered processing
-    List<int> allIndexes = [...index, ...reciverIndex]..sort();
-
-    // Process indices in batches
-    List<MessageModel> processedList = List.from(messagesList);
-    processIndices(0, allIndexes, processedList);
-
-    return processedList;
+    return messagesList;
   }
 
-  void processIndices(int startIndex, List<int> indices, List<MessageModel> messagesList) {
-    if (startIndex >= indices.length) {
-      return; // Base case: no more indices to process
-    }
+  List<MessageModel> groupMessages(List<int> indices, List<MessageModel> messagesList) {
+    int bound = 0;
+    int indexLength = indices.length;
+    List<int> indicesToRemove = [];
 
-    int bound = startIndex;
-    int count = 0;
-    List<int> toRemove = [];
-
-    // Find continuous ranges
-    for (int i = startIndex; i < indices.length; i++) {
-      if (i != indices.length - 1 && indices[i] + 1 == indices[i + 1]) {
-        count++;
-      } else {
-        if (count >= 3) {
-          toRemove.addAll(indices.getRange(bound, i + 1));
-          addData(indices[i], indices[bound], messagesList);
+    for (int i = 0; i < indexLength; i++) {
+      if (i != indexLength - 1) {
+        if (indices[i] + 1 == indices[i + 1]) {
+          // Continue if consecutive
+          continue;
+        } else {
+          if (i - bound >= 2) { // Group of 3 or more
+            indicesToRemove.addAll(indices.sublist(bound, i + 1));
+            addData(indices[bound], indices[i], messagesList);
+          }
+          bound = i + 1;
         }
-        bound = i + 1;
-        count = 0;
+      } else {
+        if (i - bound >= 2) { // Group of 3 or more
+          indicesToRemove.addAll(indices.sublist(bound, i + 1));
+          addData(indices[bound], indices[i], messagesList);
+        }
       }
     }
 
-    // Process next batch
-    if (toRemove.isNotEmpty) {
-      toRemove.sort((a, b) => b.compareTo(a)); // Sort in descending order
-      for (int index in toRemove) {
-        messagesList.removeAt(index);
-      }
+    // Remove indices from the list in reverse order to avoid shifting issues
+    indicesToRemove.sort((a, b) => b.compareTo(a));
+    for (int idx in indicesToRemove) {
+      messagesList.removeAt(idx);
     }
 
-    // Recurse to process remaining indices
-    processIndices(bound, indices, messagesList);
+    return messagesList;
   }
 
-  void addData(int endIndex, int startIndex, List<MessageModel> messagesList) {
-    // Combine multiImages and add messages
-    if (messagesList[endIndex].multiImages == null) {
-      messagesList[endIndex].multiImages = [];
+  void addData(int startIndex, int endIndex, List<MessageModel> messagesList) {
+    if (messagesList[startIndex].multiImages != null) {
+      if (messagesList[endIndex].multiImages == null) {
+        messagesList[endIndex].multiImages = [];
+      }
+      messagesList[endIndex].multiImages?.addAll(messagesList[startIndex].multiImages ?? []);
     }
     for (int i = startIndex; i <= endIndex; i++) {
-      if (messagesList[i].multiImages != null) {
-        messagesList[endIndex].multiImages?.addAll(messagesList[i].multiImages ?? []);
+      if (messagesList[i].message != null) {
+        messagesList[endIndex].multiImages?.add(messagesList[i].message!);
       }
-      messagesList[endIndex].multiImages?.add(messagesList[i].message ?? Message());
     }
   }
 

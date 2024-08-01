@@ -326,7 +326,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        bottomViewArgs.value.customBottomView != null ? bottomViewArgs.value.customBottomView!(context: context,messageController: controller.messageController,onCameraTap: controller.goToCameraScreen,onSendTap: controller.sendMessage,onAttachmentTap: controller.openDialog,onDocumentTap:controller.pickFile) :  SizedBox(
+        bottomViewArgs.value.customBottomView != null ? bottomViewArgs.value.customBottomView!(context: context,messageController: controller.messageController,onCameraTap: () => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onSendTap: controller.sendMessage,onAttachmentTap: controller.openDialog,onDocumentTap:controller.pickFile) :  SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Row(
             children: [
@@ -392,7 +392,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                       )
                           : const SizedBox(),
                       bottomViewArgs.value.isCameraImageSendEnable
-                          ?  bottomViewArgs.value.customCameraBtn != null ? bottomViewArgs.value.customCameraBtn!(context,controller.goToCameraScreen) : CircleIconButton(
+                          ?  bottomViewArgs.value.customCameraBtn != null ? bottomViewArgs.value.customCameraBtn!(context,() => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable)) : CircleIconButton(
                         height: ChatHelpers
                             .iconSizeExtraOverLarge,
                         width: ChatHelpers
@@ -408,7 +408,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                             ?.cameraIconColor ??
                             ChatHelpers.textColor_4,
                         onTap: () =>
-                            controller.goToCameraScreen(),
+                            controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),
                       )
                           : const SizedBox()
                     ],
@@ -441,7 +441,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
           ),
         ),
         const SizedBox(height: ChatHelpers.marginSizeSmall,),
-        bottomViewArgs.value.customAttachmentView != null ? bottomViewArgs.value.customAttachmentView!(context: context,onCameraTap: controller.goToCameraScreen,onGalleryTap: controller.photoPermission,onDocumentTap: controller.pickFile,onRecorderTap: controller.record) : _sendAttachmentView(context, controller)
+        bottomViewArgs.value.customAttachmentView != null ? bottomViewArgs.value.customAttachmentView!(context: context,onCameraTap:() => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onGalleryTap:() =>  controller.photoPermission(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onDocumentTap: controller.pickFile,onRecorderTap: controller.record) : _sendAttachmentView(context, controller)
       ],
     );
   }
@@ -494,7 +494,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                     boxColor: ChatHelpers.grey.withOpacity(.4),
                     // onPressed: () => controller.cameraPermission(),
                     onPressed: () =>
-                        controller.goToCameraScreen(),
+                        controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),
                     title: 'Camera',
                     icons: Icons.camera_alt,
                     height: 70,
@@ -515,7 +515,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                   CommonIconVBtn(
                     boxColor: ChatHelpers.grey.withOpacity(.4),
                     onPressed: () =>
-                        controller.photoPermission(),
+                        controller.photoPermission(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),
                     title: 'Gallery',
                     icons: Icons.photo_album,
                     height: 70,

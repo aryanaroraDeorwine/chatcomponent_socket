@@ -37,79 +37,25 @@ class MultiImageViewsScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: List.generate(
-                      imagesList.length,
-                      (index) => GestureDetector(
-                          onTap: () {
-                            Get.to(() =>
-                                ViewImageAndPlayVideoScreen(
-                                  file: imagesList[index].file ?? '',
-                                  chatController: chatController,
-                                )
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: ChatHelpers.mainColorLight,width: 2)
-                            ),
-                            child: Hero(
-                                tag: imagesList[index].file ?? "",
-                                child: Stack(
-                                  children: [
-                                    SizedBox(
-                                      height: MediaQuery.of(context).size.height * .6,
-                                      width: double.infinity,
-                                      child: cachedNetworkImage(
-                                          height: (MediaQuery.of(context).size.height).round(),
-                                          width: (MediaQuery.of(context).size.width).round(),
-                                          fit: BoxFit.fill,
-                                          isProfile: false,
-                                          url: imagesList[index].file ?? ""),
-                                    ),
-                                    Positioned(child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.end,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Flexible(
-                                        //   child: Text(DateTimeConvertor
-                                        //       .timeExt(
-                                        //       imagesList[index]
-                                        //           .time ?? ''),
-                                        //       textAlign: TextAlign.start,
-                                        //       style: chatController
-                                        //           .themeArguments
-                                        //           ?.styleArguments
-                                        //           ?.messagesTimeTextStyle ??
-                                        //           ChatHelpers.instance.styleLight(
-                                        //               ChatHelpers
-                                        //                   .fontSizeExtraSmall,
-                                        //               isSender == true
-                                        //                   ? chatController
-                                        //                   .themeArguments
-                                        //                   ?.colorArguments
-                                        //                   ?.senderMessageTextColor ??
-                                        //                   ChatHelpers
-                                        //                       .white
-                                        //                   : chatController
-                                        //                   .themeArguments
-                                        //                   ?.colorArguments
-                                        //                   ?.receiverMessageTextColor ??
-                                        //                   ChatHelpers
-                                        //                       .black)),
-                                        // ),
-                                        const SizedBox(
-                                          width: ChatHelpers
-                                              .marginSizeExtraSmall,
-                                        ),
-                                      ],
-                                    ))
-                                  ],
-                                )),
-                          )).paddingSymmetric(vertical: ChatHelpers.marginSizeExtraSmall).marginOnly(top: ChatHelpers.marginSizeExtraSmall,left: ChatHelpers.marginSizeExtraSmall,right: ChatHelpers.marginSizeExtraSmall)),
-                ),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: List.generate(
+                    imagesList.length,
+                    (index) => GestureDetector(
+                        onTap: () {
+                          Get.to(() =>
+                              ViewImageAndPlayVideoScreen(
+                                file: imagesList[index].file ?? '',
+                                chatController: chatController,
+                              )
+                          );
+                        },
+                        child: Hero(
+                            tag: imagesList[index].file ?? "",
+                            child: cachedNetworkImage(
+                                fit: BoxFit.fitWidth,
+                                isProfile: false,
+                                url: imagesList[index].file ?? ""))).paddingSymmetric(vertical: ChatHelpers.marginSizeExtraSmall).marginOnly(top: ChatHelpers.marginSizeExtraSmall,left: ChatHelpers.marginSizeExtraSmall,right: ChatHelpers.marginSizeExtraSmall)),
               ),
             ),
           ],

@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:chat_component/chat_components/view/widgets/toast_view/toast_view.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:video_player/video_player.dart';
 import '../../../model/chatHelper/chat_helper.dart';
@@ -22,6 +24,8 @@ class CameraScnController extends GetxController {
   RxBool isCropped = false.obs;
   RxBool isImagePainterOpen = false.obs;
   RxBool isLoading = false.obs;
+  RxBool isVideoSendEnable = false.obs;
+  RxBool isImageWithText = false.obs;
 
   RxInt selectedImageIndex = 0.obs;
 
@@ -63,7 +67,11 @@ class CameraScnController extends GetxController {
   Future<void> initServices() async {
     isLoading.value = true;
 
-    image.value = Get.arguments;
+    image.value = Get.arguments["image"];
+    isVideoSendEnable.value = Get.arguments["isVideoSendEnable"];
+    isImageWithText.value = Get.arguments["isImageWithText"];
+    PermissionStatus photosStatus = await Permission.photos.status;
+    if (photosStatus.isGranted) {
     if(image.value.path == ""){
       availableCamera.value = await availableCameras();
 
@@ -87,6 +95,38 @@ class CameraScnController extends GetxController {
         messageControllerList.add(TextEditingController());
       }
       pageViewMainController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    }
+    } else {
+      Permission.photos.request();
+      PermissionStatus photosStatus = await Permission.photos.status;
+      if (photosStatus.isGranted) {
+        if(image.value.path == ""){
+          availableCamera.value = await availableCameras();
+
+          final firstCamera = availableCamera.first;
+          _initCamera(firstCamera);
+          imageAlbums.value = Get.find<ChatServices>().chatArguments.isVideoSendEnable ? await PhotoGallery.listAlbums() : await PhotoGallery.listAlbums(
+              mediumType: MediumType.image,
+              hideIfEmpty: true
+          );
+          MediaPage mediaPage = await imageAlbums.first.listMedia();
+          mediaList.value = mediaPage.items;
+          logPrint("media image : ${mediaList.first.toString()}");
+          isLoading.value = false;
+
+        }else {
+          imageList.add(PickerFileModal(file: File(image.value.path), isVideo: false));
+          cropImageList.add(PickerFileModal(file: File(image.value.path), isVideo: false));
+          logPrint("ImageList : ${imageList.toString()}");
+          for(var image in imageList){
+            logPrint(image);
+            messageControllerList.add(TextEditingController());
+          }
+          pageViewMainController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+        }
+      }else{
+        toastShow(massage: "Please give gallery permission ", error: true);
+      }
     }
 
   }
@@ -232,7 +272,11 @@ class CameraScnController extends GetxController {
 
       isVideoRecorded.value = true;
 
-    }else{
+    }
+    else{
+      imageList.clear();
+      cropImageList.clear();
+      isCropped.call(false);
       imageList.add(PickerFileModal(file: File(image.value.path), isVideo: false));
       cropImageList.add(PickerFileModal(file: File(image.value.path), isVideo: false));
     }
@@ -304,10 +348,12 @@ class CameraScnController extends GetxController {
           ]);
 
       if (cropped != null) {
+        logPrint("cropped image : ${cropped.path} ,isCropped : ${isCropped.value}");
         isCropped.value = true;
         imageList[index].file = image.value;
         cropImageList[index].file = File(cropped.path);
       }
+      isCropped.call(isCropped.value);
     }catch(e){
       logPrint("error in editing image $e");
     }
@@ -319,6 +365,7 @@ class CameraScnController extends GetxController {
     Get.toNamed(ChatHelpers.drawEditScreen,arguments: image.value)?.then((value) {
       image.value = value ;
       isCropped.isTrue ? cropImageList[index].file = image.value : imageList[index].file = image.value;
+      isCropped.call(isCropped.value);
       logPrint("value : $value , ${isCropped.value} , $cropImageList ,$imageList");
     });
   }

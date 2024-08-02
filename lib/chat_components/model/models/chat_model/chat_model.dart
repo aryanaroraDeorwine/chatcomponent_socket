@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../message_model/message_model.dart';
 
 class ChatRoomModel {
@@ -83,6 +85,35 @@ class UserDetails {
     "SignType": userSignType,
     "active_status": userActiveStatus,
     "typing_status": userTypingStatus,
+  };
+}
+
+
+FileUploadModel fileUploadModelFromJson(String str) => FileUploadModel.fromJson(json.decode(str));
+
+String fileUploadModelToJson(FileUploadModel data) => json.encode(data.toJson());
+
+class FileUploadModel {
+  String? detail;
+  String? fileName;
+  String? fileWithPath;
+
+  FileUploadModel({
+    this.detail,
+    this.fileName,
+    this.fileWithPath,
+  });
+
+  factory FileUploadModel.fromJson(Map<String, dynamic> json) => FileUploadModel(
+    detail: json["detail"],
+    fileName: json["file_name"],
+    fileWithPath: json["file_with_path"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "detail": detail,
+    "file_name": fileName,
+    "file_with_path": fileWithPath,
   };
 }
 

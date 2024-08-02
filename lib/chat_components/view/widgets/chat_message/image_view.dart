@@ -87,48 +87,24 @@ class ImageView extends StatelessWidget {
                               ChatHelpers.backcolor,
                           borderRadius: BorderRadius.only(
                             bottomLeft: isSender == true
-                                ? Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxSenderBottomLeftRadius ??
+                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomLeftRadius ??
                                 ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxReceiverBottomLeftRadius ??
+                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomLeftRadius ??
                                 ChatHelpers.cornerRadius),
                             topRight: isSender == true
-                                ? Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxSenderTopRightRadius ??
+                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopRightRadius ??
                                 0)
-                                : Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxReceiverTopRightRadius ??
+                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopRightRadius ??
                                 ChatHelpers.cornerRadius),
                             topLeft: isSender == true
-                                ? Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxSenderTopLeftRadius ??
+                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopLeftRadius ??
                                 ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxReceiverTopLeftRadius ??
+                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopLeftRadius ??
                                 0),
                             bottomRight: isSender == true
-                                ? Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxSenderBottomRightRadius ??
+                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomRightRadius ??
                                 ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController
-                                .themeArguments
-                                ?.borderRadiusArguments
-                                ?.messageBoxReceiverBottomRightRadius ??
+                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomRightRadius ??
                                 ChatHelpers.cornerRadius),
                           ),
                         ),
@@ -218,13 +194,9 @@ class ImageView extends StatelessWidget {
                                     child: Text(
                                       imageMessage,
                                       textAlign: TextAlign.start,
-                                      style: chatController
-                                          .themeArguments
-                                          ?.styleArguments
-                                          ?.messageTextStyle ??
+                                      style: chatController.themeArguments?.styleArguments?.messageTextStyle ??
                                           ChatHelpers.instance.styleRegular(
-                                              ChatHelpers
-                                                  .fontSizeDefault,
+                                              ChatHelpers.fontSizeDefault,
                                               isSender == true
                                                   ? chatController
                                                   .themeArguments

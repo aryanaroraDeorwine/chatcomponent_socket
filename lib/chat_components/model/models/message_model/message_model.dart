@@ -152,6 +152,7 @@ class Message {
   String? imageType;
   int? reaction;
   bool? isSeen;
+  bool? isAdding;
 
   Message({
     this.id,
@@ -163,7 +164,8 @@ class Message {
     this.time,
     this.isSeen,
     this.reaction,
-    this.imageType
+    this.imageType,
+    this.isAdding
   });
 
 

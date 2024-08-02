@@ -21,7 +21,7 @@ enum CallType { audioCall,videoCall }
 
 
 /// enum for message types
-enum MessageType { text,file }
+enum MessageType { text,image }
 
 
 /// enum for call status

@@ -1,3 +1,6 @@
+import 'package:chat_component/chat_components/model/models/chat_view_args/chat_view_args.dart';
+import 'package:chat_component/chat_components/model/models/message_model/message_model.dart';
+import 'package:chat_component/chat_components/view/widgets/log_print/log_print_condition.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../model/chatHelper/chat_helper.dart';
@@ -16,6 +19,7 @@ class MessageView extends StatelessWidget {
   final List<String> reactionList;
   final VoidCallback onLongTap;
   final ChatViewController chatController;
+  final MainViewArgs mainViewArgs;
 
   const MessageView(
       {super.key,
@@ -28,7 +32,7 @@ class MessageView extends StatelessWidget {
       required this.onLongTap,
       required this.isReaction,
       required this.reactionList,
-      required this.chatController});
+      required this.chatController, required this.mainViewArgs});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,9 @@ class MessageView extends StatelessWidget {
                     constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .85, minWidth: 5),
                     child: Stack(
                       children: [
-                       (isSender && (chatController.chatArguments.themeArguments?.customWidgetsArguments?.customSenderMessageView != null && chatController.chatArguments.themeArguments?.customWidgetsArguments?.customReceiverMessageView != null) ? chatController.chatArguments.themeArguments?.customWidgetsArguments!.customSenderMessageView!(context: context,message: message,time: time,index: index,isSeen: isSeen,isSender: isSender) : chatController.chatArguments.themeArguments?.customWidgetsArguments!.customReceiverMessageView!(context: context,message: message,time: time,index: index,isSeen: isSeen,isSender: isSender)) ??
+                        (mainViewArgs.customSenderView != null && mainViewArgs.customReceiverView != null) ? (isSender && (mainViewArgs.customSenderView != null && mainViewArgs.customReceiverView != null) ?
+                       mainViewArgs.customSenderView!(context,chatController.messagesPaginationController.itemList[index].message ?? Message()) :
+                       mainViewArgs.customSenderView!(context,chatController.messagesPaginationController.itemList[index].message ?? Message())) :
                            Container(
                           margin: EdgeInsets.only(
                             left: isSender == true ? ChatHelpers.marginSizeSmall : 0,

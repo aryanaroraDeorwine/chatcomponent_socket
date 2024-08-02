@@ -172,6 +172,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                         : const SizedBox(),
                     itemData.message?.messageType == 'text' ?
                     MessageView(
+                      mainViewArgs: mainViewArgs.value,
                       index: index,
                       chatController: controller,
                       onLongTap: () {
@@ -215,7 +216,8 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                                     imagesList: itemData.multiImages ?? [],
                                     chatController: controller, isSender: itemData.userId == controller.currentUserId.value,),
                       ),
-                      onLongPress: () {  }, chatController: controller,
+                      onLongPress: () {  },
+                      chatController: controller,
                       isSeen: itemData
                         .message?.isSeen ?? false, time: DateTimeConvertor
                         .timeExt(
@@ -225,7 +227,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                     )
                         :
                     ImageView(
-                      isAdding: true,
+                      isAdding: itemData.message?.isAdding ?? true,
                       imageMessage: itemData
                           .message?.text ?? "",
                       reaction: itemData
@@ -288,7 +290,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                         },
                         chatController: controller)
                         : FileView(
-                      isAdding: true,
+                      isAdding: itemData.message?.isAdding ?? true,
                       reaction: itemData.message?.reaction ?? 7,
                       isSeen: itemData.message?.isSeen ?? false,
                       onLongPress: () {

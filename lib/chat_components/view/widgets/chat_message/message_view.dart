@@ -1,6 +1,4 @@
 import 'package:chat_component/chat_components/model/models/chat_view_args/chat_view_args.dart';
-import 'package:chat_component/chat_components/model/models/message_model/message_model.dart';
-import 'package:chat_component/chat_components/view/widgets/log_print/log_print_condition.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../model/chatHelper/chat_helper.dart';
@@ -53,178 +51,182 @@ class MessageView extends StatelessWidget {
                     child: Stack(
                       children: [
                         (mainViewArgs.customSenderView != null && mainViewArgs.customReceiverView != null) ? (isSender && (mainViewArgs.customSenderView != null && mainViewArgs.customReceiverView != null) ?
-                       mainViewArgs.customSenderView!(context,chatController.messagesPaginationController.itemList[index].message ?? Message()) :
-                       mainViewArgs.customSenderView!(context,chatController.messagesPaginationController.itemList[index].message ?? Message())) :
-                           Container(
-                          margin: EdgeInsets.only(
-                            left: isSender == true ? ChatHelpers.marginSizeSmall : 0,
-                            right: isSender == true ? 0 : ChatHelpers.marginSizeSmall ,
-                            bottom: reaction != 7 ? 10 : 0,
-                            top: ChatHelpers.marginSizeExtraSmall,
-                          ),
-                          padding: const EdgeInsets.all(
-                              ChatHelpers.paddingSizeSmall),
-                          decoration: BoxDecoration(
-                            color: isSender == true
-                                ? chatController.themeArguments?.colorArguments
-                                        ?.senderMessageBoxColor ??
+                        mainViewArgs.customSenderView!(context,chatController.messagesPaginationController.itemList[index]) :
+                        mainViewArgs.customReceiverView!(context,chatController.messagesPaginationController.itemList[index])) :
+                        Stack(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(
+                                left: isSender == true ? ChatHelpers.marginSizeSmall : 0,
+                                right: isSender == true ? 0 : ChatHelpers.marginSizeSmall ,
+                                bottom: reaction != 7 ? 10 : 0,
+                                top: ChatHelpers.marginSizeExtraSmall,
+                              ),
+                              padding: const EdgeInsets.all(
+                                  ChatHelpers.paddingSizeSmall),
+                              decoration: BoxDecoration(
+                                color: isSender == true
+                                    ? chatController.themeArguments?.colorArguments
+                                    ?.senderMessageBoxColor ??
                                     ChatHelpers.mainColor
-                                : chatController.themeArguments?.colorArguments
-                                        ?.receiverMessageBoxColor ??
+                                    : chatController.themeArguments?.colorArguments
+                                    ?.receiverMessageBoxColor ??
                                     ChatHelpers.backcolor,
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: isSender == true
-                                  ? Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxSenderBottomLeftRadius ??
-                                  ChatHelpers.cornerRadius)
-                                  : Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxReceiverBottomLeftRadius ??
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: isSender == true
+                                      ? Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxSenderBottomLeftRadius ??
+                                      ChatHelpers.cornerRadius)
+                                      : Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxReceiverBottomLeftRadius ??
                                       ChatHelpers.cornerRadius),
-                              topRight: isSender == true
-                                  ? Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxSenderTopRightRadius ??
+                                  topRight: isSender == true
+                                      ? Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxSenderTopRightRadius ??
                                       0)
-                                  : Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxReceiverTopRightRadius ??
+                                      : Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxReceiverTopRightRadius ??
                                       ChatHelpers.cornerRadius),
-                              topLeft: isSender == true
-                                  ? Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxSenderTopLeftRadius ??
+                                  topLeft: isSender == true
+                                      ? Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxSenderTopLeftRadius ??
                                       ChatHelpers.cornerRadius)
-                                  : Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxReceiverTopLeftRadius ??
+                                      : Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxReceiverTopLeftRadius ??
                                       0),
-                              bottomRight: isSender == true
-                                  ? Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxSenderBottomRightRadius ??
+                                  bottomRight: isSender == true
+                                      ? Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxSenderBottomRightRadius ??
                                       ChatHelpers.cornerRadius)
-                                  : Radius.circular(chatController
-                                          .themeArguments
-                                          ?.borderRadiusArguments
-                                          ?.messageBoxReceiverBottomRightRadius ??
+                                      : Radius.circular(chatController
+                                      .themeArguments
+                                      ?.borderRadiusArguments
+                                      ?.messageBoxReceiverBottomRightRadius ??
                                       ChatHelpers.cornerRadius),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: isSender
-                                ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal:ChatHelpers.marginSizeExtraSmall),
-                                  child: Text(
-                                    message,
-                                    style: chatController
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: isSender
+                                    ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal:ChatHelpers.marginSizeExtraSmall),
+                                      child: Text(
+                                        message,
+                                        style: chatController
                                             .themeArguments
                                             ?.styleArguments
                                             ?.messageTextStyle ??
-                                        ChatHelpers.instance.styleRegular(
-                                            ChatHelpers.fontSizeDefault,
-                                            isSender == true
-                                                ? chatController
-                                                        .themeArguments
-                                                        ?.colorArguments
-                                                        ?.senderMessageTextColor ??
+                                            ChatHelpers.instance.styleRegular(
+                                                ChatHelpers.fontSizeDefault,
+                                                isSender == true
+                                                    ? chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.senderMessageTextColor ??
                                                     ChatHelpers.white
-                                                : chatController
-                                                        .themeArguments
-                                                        ?.colorArguments
-                                                        ?.receiverMessageTextColor ??
+                                                    : chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.receiverMessageTextColor ??
                                                     ChatHelpers.black),
-                                    softWrap: true,
+                                        softWrap: true,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: ChatHelpers.marginSizeExtraSmall,
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
                                   const SizedBox(
-                                    width: ChatHelpers.marginSizeExtraSmall,
+                                    height: ChatHelpers.marginSizeExtraSmall,
                                   ),
-                                  Text(
-                                    time,
-                                    style: chatController
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(
+                                        width: ChatHelpers.marginSizeExtraSmall,
+                                      ),
+                                      Text(
+                                        time,
+                                        style: chatController
                                             .themeArguments
                                             ?.styleArguments
                                             ?.messagesTimeTextStyle ??
-                                        ChatHelpers.instance.styleLight(
-                                            ChatHelpers.fontSizeExtraSmall,
-                                            isSender == true
-                                                ? chatController
-                                                        .themeArguments
-                                                        ?.colorArguments
-                                                        ?.senderMessageTextColor ??
+                                            ChatHelpers.instance.styleLight(
+                                                ChatHelpers.fontSizeExtraSmall,
+                                                isSender == true
+                                                    ? chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.senderMessageTextColor ??
                                                     ChatHelpers.white
-                                                : chatController
-                                                        .themeArguments
-                                                        ?.colorArguments
-                                                        ?.receiverMessageTextColor ??
+                                                    : chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.receiverMessageTextColor ??
                                                     ChatHelpers.black),
-                                  ),
-                                  SizedBox(
-                                    width: isSender == true ?ChatHelpers.marginSizeExtraSmall : 0,
-                                  ),
-                                  isSender == true
-                                      ? Image.asset(
-                                          ChatHelpers.instance.doubleTickImage,
-                                          height: 15,
-                                          width: 15,
-                                    package: 'chat_component',
-                                          color: isSeen
-                                              ? chatController
-                                                      .themeArguments
-                                                      ?.colorArguments
-                                                      ?.tickSeenColor ??
-                                                  ChatHelpers.backcolor
-                                              : chatController
-                                                      .themeArguments
-                                                      ?.colorArguments
-                                                      ?.tickUnSeenColor ??
-                                                  ChatHelpers.grey,
-                                          )
-                                      : const SizedBox()
+                                      ),
+                                      SizedBox(
+                                        width: isSender == true ?ChatHelpers.marginSizeExtraSmall : 0,
+                                      ),
+                                      isSender == true
+                                          ? Image.asset(
+                                        ChatHelpers.instance.doubleTickImage,
+                                        height: 15,
+                                        width: 15,
+                                        package: 'chat_component',
+                                        color: isSeen
+                                            ? chatController
+                                            .themeArguments
+                                            ?.colorArguments
+                                            ?.tickSeenColor ??
+                                            ChatHelpers.backcolor
+                                            : chatController
+                                            .themeArguments
+                                            ?.colorArguments
+                                            ?.tickUnSeenColor ??
+                                            ChatHelpers.grey,
+                                      )
+                                          : const SizedBox()
+                                    ],
+                                  )
                                 ],
-                              )
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          top: 5,
-                          right: isSender ? 0 : null,
-                          left: isSender ? null : 0,
-                          child: Transform(
-                            alignment: Alignment.center,
-                            transform: Matrix4.rotationY(isSender ? math.pi : 0), // flip the bubble shape for receiver side
-                            child: CustomPaint(
-                              size: const Size(20, 20),
-                              painter: CustomBubbleShape(isSender == true
-                                  ? chatController.themeArguments?.colorArguments
-                                  ?.senderMessageBoxColor ??
-                                  ChatHelpers.mainColor
-                                  : chatController.themeArguments?.colorArguments
-                                  ?.receiverMessageBoxColor ??
-                                  ChatHelpers.backcolor),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              top: 5,
+                              right: isSender ? 0 : null,
+                              left: isSender ? null : 0,
+                              child: Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(isSender ? math.pi : 0), // flip the bubble shape for receiver side
+                                child: CustomPaint(
+                                  size: const Size(20, 20),
+                                  painter: CustomBubbleShape(isSender == true
+                                      ? chatController.themeArguments?.colorArguments
+                                      ?.senderMessageBoxColor ??
+                                      ChatHelpers.mainColor
+                                      : chatController.themeArguments?.colorArguments
+                                      ?.receiverMessageBoxColor ??
+                                      ChatHelpers.backcolor),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         chatController.chatArguments.reactionsEnable == true ? reaction != 7
                             ? Positioned(

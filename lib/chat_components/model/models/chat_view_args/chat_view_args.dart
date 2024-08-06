@@ -24,19 +24,20 @@ class HeaderViewArgs{
 
 class MainViewArgs{
 
-  Widget Function(BuildContext context, Message messageModal)? customSenderView;
-  Widget Function(BuildContext context, Message messageModal)? customReceiverView;
-  Widget Function(BuildContext context, Message messageModal)? customImageSenderView;
-  Widget Function(BuildContext context, Message messageModal)? customImageReceiverView;
-  Widget Function(BuildContext context, Message messageModal)? customMultiImageSenderView;
-  Widget Function(BuildContext context, Message messageModal)? customMultiImageReceiverView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customSenderView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customReceiverView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customImageSenderView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customImageReceiverView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customMultiImageSenderView;
+  Widget Function(BuildContext context, MessageModel messageModal)? customMultiImageReceiverView;
+  Widget Function(BuildContext context, String time)? customDateView;
 
   Widget? customLoader;
   bool messageSuggestionEnable;
   WizardWidget? wizardWidget;
   bool? reactionsEnable;
 
-  MainViewArgs({this.customSenderView,this.customReceiverView,this.customLoader,required this.messageSuggestionEnable,this.wizardWidget,this.customImageReceiverView,this.reactionsEnable,this.customImageSenderView,this.customMultiImageReceiverView,this.customMultiImageSenderView});
+  MainViewArgs({this.customSenderView,this.customReceiverView,this.customLoader,required this.messageSuggestionEnable,this.wizardWidget,this.customImageReceiverView,this.reactionsEnable,this.customImageSenderView,this.customMultiImageReceiverView,this.customMultiImageSenderView,this.customDateView});
 }
 
 class BottomViewArgs{
@@ -48,8 +49,8 @@ class BottomViewArgs{
 
   Widget Function(BuildContext context,VoidCallback onSendTap)? customSendBtn;
   Widget Function(BuildContext context,VoidCallback onCameraTap)? customCameraBtn;
-  Widget Function({required BuildContext context,required VoidCallback onCameraTap,required VoidCallback onSendTap,required TextEditingController messageController,VoidCallback? onDocumentTap,VoidCallback? onAttachmentTap})? customBottomView;
-  Widget Function({required BuildContext context,required VoidCallback onCameraTap,required VoidCallback? onGalleryTap,required VoidCallback? onDocumentTap,required VoidCallback? onRecorderTap})? customAttachmentView;
+  Widget Function(BuildContext context,VoidCallback onCameraTap, VoidCallback onSendTap, TextEditingController messageController,VoidCallback? onDocumentTap,VoidCallback? onAttachmentTap)? customBottomView;
+  Widget Function(BuildContext context,VoidCallback onCameraTap, VoidCallback? onGalleryTap, VoidCallback? onDocumentTap, VoidCallback? onRecorderTap)? customAttachmentView;
 
   BottomViewArgs({required this.isImageWithText,this.customSendBtn,this.customCameraBtn,required this.isAttachmentSendEnable,required this.isCameraImageSendEnable,required this.isVideoSendEnable,this.customBottomView,this.customAttachmentView});
 

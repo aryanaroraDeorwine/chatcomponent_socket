@@ -39,7 +39,7 @@ class ViewImageAndPlayVideoScreen extends StatelessWidget {
       body: Stack(
         children: [
           Obx(()=>Positioned(
-            top: MediaQuery.of(context).size.height * .1,
+            top: MediaQuery.of(context).size.height * .05,
             child: Hero(
               tag: file,
               key: Key(file),

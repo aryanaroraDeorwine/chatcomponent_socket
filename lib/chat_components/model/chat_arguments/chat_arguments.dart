@@ -15,7 +15,7 @@ class ChatArguments {
   bool isVideoCallEnable;
   bool isAudioCallEnable;
   bool isAttachmentSendEnable;
-  ImageArguments? imageArguments;
+  AttachmentArguments? imageArguments;
   ThemeArguments? themeArguments;
   bool isCameraImageSendEnable;
   bool isVideoSendEnable;
@@ -47,13 +47,13 @@ class ChatArguments {
 }
 
 /// Image send able Arguments
-class ImageArguments {
+class AttachmentArguments {
   bool? isImageFromGallery;
   bool? isImageFromCamera;
   bool? isDocumentsSendEnable;
   bool? isAudioRecorderEnable;
 
-  ImageArguments({
+  AttachmentArguments({
     this.isAudioRecorderEnable = false,
     this.isImageFromGallery = false,
     this.isImageFromCamera = false,
@@ -189,13 +189,8 @@ class BorderRadiusArguments {
 class CustomWidgetsArguments {
   Widget? customSendIconButtonWidgets;
   Widget? customLoaderWidgets;
-  Widget Function({BuildContext context, String message,String time,int index,bool isSender,bool isSeen})? customSenderMessageView;
-  Widget Function({BuildContext context, String message,String time,int index,bool isSender,bool isSeen})? customReceiverMessageView;
-  Widget Function({BuildContext context, String image,String imageMessage, String time,int index,bool isSender,bool isSeen})? customSenderImageView;
-  Widget Function({BuildContext context, String image,String imageMessage, String time,int index,bool isSender,bool isSeen})? customReceiverImageView;
-  Widget Function(BuildContext context, String date)? customDateView;
 
-  CustomWidgetsArguments({this.customLoaderWidgets, this.customSendIconButtonWidgets, this.customSenderMessageView, this.customReceiverMessageView, this.customSenderImageView, this.customReceiverImageView,this.customDateView});
+  CustomWidgetsArguments({this.customLoaderWidgets, this.customSendIconButtonWidgets});
 }
 
 /// Call screen Arguments

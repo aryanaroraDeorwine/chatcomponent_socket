@@ -96,7 +96,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
 
   Widget _buildMainView(BuildContext context, T controller){
     return Padding(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top,bottom: bottomViewArgs.value.customBottomView != null ? 0 : Platform.isIOS ? 20 : 5),
       child: Column(
         children: [
           Obx(() => headerViewArgs.value.customTopView !=null ? headerViewArgs.value.customTopView!(userName: headerViewArgs.value.userName.capitalizeFirst ??"",userProfile: headerViewArgs.value.userProfile,onBack: () => Get.back(),onAudioCallTap: controller.onAudioCallTap,onVideoCallTap: controller.onVideoTap)
@@ -157,13 +157,22 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                 return Column(
                   children: [
                     index == 0 ?
-                    DateView(
+                    mainViewArgs.value.customDateView != null ? mainViewArgs.value.customDateView!(context,DateTimeConvertor
+                        .dateTimeShowMessages(
+                        itemData.createdAt ??
+                            "")) : DateView(
                         date: DateTimeConvertor
                             .dateTimeShowMessages(
                             itemData.createdAt ??
                                 ""))
-                        : DateTime.parse(itemData.createdAt ?? "").day != DateTime.parse(itemData.createdAt ?? "").day
-                        ? DateView(
+                        : mainViewArgs.value.customDateView != null ? mainViewArgs.value.customDateView!(context,DateTimeConvertor
+                        .dateTimeShowMessages(
+                        itemData.createdAt ??
+                            "")) : DateTime.parse(itemData.createdAt ?? "").day != DateTime.parse(itemData.createdAt ?? "").day
+                        ? mainViewArgs.value.customDateView != null ? mainViewArgs.value.customDateView!(context,DateTimeConvertor
+                        .dateTimeShowMessages(
+                        itemData.createdAt ??
+                            "")) : DateView(
                         date: DateTimeConvertor
                             .dateTimeShowMessages(
                             itemData
@@ -211,11 +220,12 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                     itemData.multiImages?.isNotEmpty ?? false ?
                     MultiImagesViews(multiImageList: itemData.multiImages ?? [], index: index, reaction: itemData
                         .message?.reaction ?? 7, isSender: itemData.userId == controller.currentUserId.value,
-                      onTap: () => Get.to(
+                      onTap: () => Get.to( () =>
                                     MultiImageViewsScreen(
                                     imagesList: itemData.multiImages ?? [],
                                     chatController: controller, isSender: itemData.userId == controller.currentUserId.value,),
                       ),
+                      mainViewArgs: mainViewArgs.value,
                       onLongPress: () {  },
                       chatController: controller,
                       isSeen: itemData
@@ -227,6 +237,7 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                     )
                         :
                     ImageView(
+                      mainViewArgs: mainViewArgs.value,
                       isAdding: itemData.message?.isAdding ?? true,
                       imageMessage: itemData
                           .message?.text ?? "",
@@ -239,13 +250,13 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
                       image: itemData.message?.file ?? "",
                       isSender: itemData.userId == controller.currentUserId.value,
                       onTap: () => itemData.message?.file == FileTypes.video.name ?
-                      Get.to(
+                      Get.to(() =>
                         FullScreenVideoPlayer(
                           file: itemData.message?.file ?? '',
                           chatController: controller, imageThumbnail: itemData.message?.file ?? "",
                         ),
                       )
-                          : Get.to(
+                          : Get.to( () =>
                         ViewImageAndPlayVideoScreen(
                           file: itemData.message?.file ?? '',
                           chatController: controller,
@@ -328,7 +339,8 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        bottomViewArgs.value.customBottomView != null ? bottomViewArgs.value.customBottomView!(context: context,messageController: controller.messageController,onCameraTap: () => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onSendTap: controller.sendMessage,onAttachmentTap: controller.openDialog,onDocumentTap:controller.pickFile) :  SizedBox(
+        bottomViewArgs.value.customBottomView != null ? bottomViewArgs.value.customBottomView!(context,() => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),controller.sendMessage,controller.messageController,controller.openDialog,controller.pickFile) :
+        SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Row(
             children: [
@@ -442,8 +454,8 @@ class ChatView<T extends ChatViewController> extends GetView<ChatViewController>
             ],
           ),
         ),
-        const SizedBox(height: ChatHelpers.marginSizeSmall,),
-        bottomViewArgs.value.customAttachmentView != null ? bottomViewArgs.value.customAttachmentView!(context: context,onCameraTap:() => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onGalleryTap:() =>  controller.photoPermission(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),onDocumentTap: controller.pickFile,onRecorderTap: controller.record) : _sendAttachmentView(context, controller)
+        SizedBox(height: bottomViewArgs.value.customBottomView != null  ? 0 : ChatHelpers.marginSizeSmall,),
+        bottomViewArgs.value.customAttachmentView != null ? bottomViewArgs.value.customAttachmentView!(context,() => controller.goToCameraScreen(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),() =>  controller.photoPermission(isImageWithText: bottomViewArgs.value.isImageWithText,isVideoSendEnable: bottomViewArgs.value.isVideoSendEnable),controller.pickFile,controller.record) : _sendAttachmentView(context, controller)
       ],
     );
   }

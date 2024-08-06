@@ -11,8 +11,8 @@ class DateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child:  Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customDateView != null ? Get.find<ChatServices>().chatArguments.themeArguments?.customWidgetsArguments?.customDateView!(context,date)
-          :  Container(
+      child:
+      Container(
         padding: const EdgeInsets.symmetric(horizontal: ChatHelpers.marginSizeDefault,vertical: ChatHelpers.marginSizeExtraSmall-1),
         margin: const EdgeInsets.symmetric(horizontal: ChatHelpers.marginSizeDefault,vertical: ChatHelpers.marginSizeSmall),
         decoration: BoxDecoration(

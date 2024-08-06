@@ -12,7 +12,7 @@ class ChatServices extends GetxService {
   late ChatArguments chatArguments;
 
   Future<ChatServices> init({
-    ImageArguments? imageArguments,
+    AttachmentArguments? imageArguments,
     ThemeArguments? themeArguments,
     bool? isVideoCallEnable,
     bool? isAudioCallEnable,

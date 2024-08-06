@@ -67,6 +67,7 @@ class MessageModel {
   List<Message> ?multiImages;
   String? userType;
   dynamic status;
+  User? user;
   String? updatedAt;
 
   MessageModel({
@@ -81,6 +82,7 @@ class MessageModel {
     this.userType,
     this.status,
     this.updatedAt,
+    this.user,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ class MessageModel {
       multiImages: json["multi_images"] != null ? List<Message>.from(json["multi_images"].map((x) => Message.fromJson(x))) : [],
       userType: json["user_type"],
       status: json["status"],
+      user: json["user"] == null ? null : User.fromJson(json["user"]),
       updatedAt: json["updated_at"],
     );
   }
@@ -111,9 +114,34 @@ class MessageModel {
       "multi_images": multiImages != null ? List<dynamic>.from(multiImages!.map((x) => x.toJson())) : null,
       "user_type": userType,
       "status": status,
+      "user": user?.toJson(),
       "updated_at": updatedAt,
     };
   }
+}
+
+class User {
+  String? id;
+  String? companyName;
+  dynamic imageWithPath;
+
+  User({
+    this.id,
+    this.companyName,
+    this.imageWithPath,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) => User(
+    id: json["id"],
+    companyName: json["company_name"],
+    imageWithPath: json["image_with_path"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "company_name": companyName,
+    "image_with_path": imageWithPath,
+  };
 }
 
 

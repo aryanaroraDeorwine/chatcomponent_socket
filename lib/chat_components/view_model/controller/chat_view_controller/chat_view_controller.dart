@@ -104,7 +104,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
 
   /// arguments get
   late ChatArguments chatArguments;
-  ImageArguments? imageArguments;
+  AttachmentArguments? imageArguments;
   ThemeArguments? themeArguments;
   RxString chatRoomID = "".obs;
   RxString currentUserId = "".obs;
@@ -454,7 +454,7 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
             // messagesPaginationController.itemList.insert(0,loadingMessage);
             //
             // /// add image in firebase storage
-            logPrint("file is : ${cameraImage}");
+            logPrint("file is : $cameraImage");
             String? url = await fileUpload(filePath: cameraImage);
             // String? thumbnailUrl = await firebase.addChatFiles("$id+thumbnail", thumbnail);
             //
@@ -807,74 +807,62 @@ class ChatViewController extends GetxController with WidgetsBindingObserver{
   }
 
 
-  List<MessageModel> checkImagesGrouping({required List<MessageModel> messagesList}) {
+  List<MessageModel> checkImagesGrouping({required List<MessageModel> messagesList}){
+
     List<int> index = [];
     List<int> reciverIndex = [];
 
+
     for (int i = 0; i < messagesList.length; i++) {
       var item = messagesList[i];
+      // logPrint("value and intem  : ${item.userId == currentUserId.value} ");
       if (item.message?.messageType == "image" && item.userId == currentUserId.value) {
         index.add(i);
-      } else if (item.message?.messageType == "image" && item.userId != currentUserId.value) {
+      }else if(item.message?.messageType == "image" && item.userId != currentUserId.value){
         reciverIndex.add(i);
       }
     }
+    logPrint('index $index');
+    rec(0,0,index,messagesList);
+    rec(0,0,reciverIndex,messagesList);
 
-    // Perform grouping operations
-    messagesList = groupMessages(index, messagesList);
-    messagesList = groupMessages(reciverIndex, messagesList);
-
+    // logPrint("messle list size : ${messagesList.length} ${messagesList[3].multiImages}");
     return messagesList;
   }
 
-  List<MessageModel> groupMessages(List<int> indices, List<MessageModel> messagesList) {
-    int bound = 0;
-    int indexLength = indices.length;
-    List<int> indicesToRemove = [];
-
-    for (int i = 0; i < indexLength; i++) {
-      if (i != indexLength - 1) {
-        if (indices[i] + 1 == indices[i + 1]) {
-          // Continue if consecutive
+  void rec(int bound,int loopindex, List index,List<MessageModel> messagesList) {
+    int count = 0;
+    for (int i = loopindex; i < index.length; i++) {
+      if (i != index.length - 1) {
+        if (index[i] + 1 == index[i + 1]) {
+          count++;
           continue;
         } else {
-          if (i - bound >= 2) { // Group of 3 or more
-            indicesToRemove.addAll(indices.sublist(bound, i + 1));
-            addData(indices[bound], indices[i], messagesList);
+          if (count >= 3) {
+            logPrint('${index[loopindex]-bound} - ${index[i]-bound}');
+            bound = bound + addData(index[i]-bound,index[loopindex]-bound,messagesList);
           }
-          bound = i + 1;
-        }
-      } else {
-        if (i - bound >= 2) { // Group of 3 or more
-          indicesToRemove.addAll(indices.sublist(bound, i + 1));
-          addData(indices[bound], indices[i], messagesList);
+          rec(bound,i + 1, index,messagesList);
+          break;
         }
       }
-    }
-
-    // Remove indices from the list in reverse order to avoid shifting issues
-    indicesToRemove.sort((a, b) => b.compareTo(a));
-    for (int idx in indicesToRemove) {
-      messagesList.removeAt(idx);
-    }
-
-    return messagesList;
-  }
-
-  void addData(int startIndex, int endIndex, List<MessageModel> messagesList) {
-    if (messagesList[startIndex].multiImages != null) {
-      if (messagesList[endIndex].multiImages == null) {
-        messagesList[endIndex].multiImages = [];
-      }
-      messagesList[endIndex].multiImages?.addAll(messagesList[startIndex].multiImages ?? []);
-    }
-    for (int i = startIndex; i <= endIndex; i++) {
-      if (messagesList[i].message != null) {
-        messagesList[endIndex].multiImages?.add(messagesList[i].message!);
+      else{
+        if (count >= 3) {
+          logPrint('${index[loopindex]-bound} - ${index[i]-bound}');
+          bound = bound + addData(index[i]-bound,index[loopindex]-bound,messagesList);
+        }
       }
     }
   }
 
+  int addData(int endIndex,int startIndex,List<MessageModel> messagesList){
+    messagesList[endIndex].multiImages?.addAll(messagesList[endIndex].multiImages ?? []);
+    for(int i = startIndex;i <= endIndex;i++){
+      messagesList[endIndex].multiImages?.add(messagesList[i].message ?? Message());
+    }
+    messagesList.removeRange(startIndex, endIndex);
+    return endIndex-startIndex;
+  }
 
 
   uploadAudioFile(String path) async {

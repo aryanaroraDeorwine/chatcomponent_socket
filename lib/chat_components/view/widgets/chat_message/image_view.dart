@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../model/chatHelper/chat_helper.dart';
+import '../../../model/models/chat_view_args/chat_view_args.dart';
 import '../../../view_model/controller/chat_view_controller/chat_view_controller.dart';
 import '../cached_network_imagewidget/cached_network_image_widget.dart';
 import '../reaction_view/reaction_view.dart';
@@ -22,6 +23,7 @@ class ImageView extends StatelessWidget {
   final VoidCallback onLongPress;
   final ChatViewController chatController;
   final bool isVideo;
+  final MainViewArgs mainViewArgs;
 
   const ImageView(
       {super.key,
@@ -35,6 +37,7 @@ class ImageView extends StatelessWidget {
       required this.index,
       required this.reaction,
       required this.imageMessage,
+        required this.mainViewArgs,
       required this.isAdding, required this.isVideo});
 
   @override
@@ -54,257 +57,262 @@ class ImageView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               ConstrainedBox(
-                constraints: const BoxConstraints(
-                    minHeight: 220, minWidth: 220, maxWidth: 220),
+                constraints: (mainViewArgs.customImageSenderView != null && mainViewArgs.customImageReceiverView != null) ? BoxConstraints(minHeight: 220, minWidth: 220, maxWidth: MediaQuery.of(context).size.width * .85) : const BoxConstraints(minHeight: 220, minWidth: 220, maxWidth: 220),
                 child: Stack(
                   children: [
                     Hero(
                       tag: image,
                       child:
-                      (isSender && (chatController.chatArguments.themeArguments?.customWidgetsArguments?.customSenderImageView != null && chatController.chatArguments.themeArguments?.customWidgetsArguments?.customReceiverImageView != null) ? chatController.chatArguments.themeArguments?.customWidgetsArguments!.customSenderImageView!(context: context,image: image,imageMessage: imageMessage,time: time,index: index,isSeen: isSeen,isSender: isSender) : chatController.chatArguments.themeArguments?.customWidgetsArguments!.customReceiverImageView!(context: context,image: image,imageMessage: imageMessage,time: time,index: index,isSeen: isSeen,isSender: isSender)) ??
-                          Container(
-                        margin: EdgeInsets.only(
-                          top: ChatHelpers.marginSizeExtraSmall,
-                          left: isSender == true
-                              ? ChatHelpers.marginSizeSmall
-                              : 0,
-                          right: isSender == true
-                              ? 0
-                              : ChatHelpers.marginSizeSmall,
-                          bottom: reaction != 7 ? 10 : 0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSender == true
-                              ? chatController
-                              .themeArguments
-                              ?.colorArguments
-                              ?.senderMessageBoxColor ??
-                              ChatHelpers.mainColor
-                              : chatController
-                              .themeArguments
-                              ?.colorArguments
-                              ?.receiverMessageBoxColor ??
-                              ChatHelpers.backcolor,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: isSender == true
-                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomLeftRadius ??
-                                ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomLeftRadius ??
-                                ChatHelpers.cornerRadius),
-                            topRight: isSender == true
-                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopRightRadius ??
-                                0)
-                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopRightRadius ??
-                                ChatHelpers.cornerRadius),
-                            topLeft: isSender == true
-                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopLeftRadius ??
-                                ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopLeftRadius ??
-                                0),
-                            bottomRight: isSender == true
-                                ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomRightRadius ??
-                                ChatHelpers.cornerRadius)
-                                : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomRightRadius ??
-                                ChatHelpers.cornerRadius),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 220,
-                              width: 220,
-                              margin: const EdgeInsets.all(
-                                  ChatHelpers.marginSizeExtraSmall),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(
-                                    ChatHelpers.marginSizeDefault),
-                                color: isSender == true
-                                    ? chatController
-                                    .themeArguments
-                                    ?.colorArguments
-                                    ?.senderMessageBoxColor ??
-                                    ChatHelpers.mainColor
-                                    : chatController
-                                    .themeArguments
-                                    ?.colorArguments
-                                    ?.receiverMessageBoxColor ??
-                                    ChatHelpers.backcolor,
+                      (mainViewArgs.customImageSenderView != null && mainViewArgs.customImageReceiverView != null) ? (isSender && (mainViewArgs.customImageSenderView != null && mainViewArgs.customImageReceiverView != null) ?
+                      mainViewArgs.customImageSenderView!(context,chatController.messagesPaginationController.itemList[index]) :
+                      mainViewArgs.customImageReceiverView!(context,chatController.messagesPaginationController.itemList[index])) :
+                      Stack(
+                        children: [
+                              Container(
+                            margin: EdgeInsets.only(
+                              top: ChatHelpers.marginSizeExtraSmall,
+                              left: isSender == true
+                                  ? ChatHelpers.marginSizeSmall
+                                  : 0,
+                              right: isSender == true
+                                  ? 0
+                                  : ChatHelpers.marginSizeSmall,
+                              bottom: reaction != 7 ? 10 : 0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSender == true
+                                  ? chatController
+                                  .themeArguments
+                                  ?.colorArguments
+                                  ?.senderMessageBoxColor ??
+                                  ChatHelpers.mainColor
+                                  : chatController
+                                  .themeArguments
+                                  ?.colorArguments
+                                  ?.receiverMessageBoxColor ??
+                                  ChatHelpers.backcolor,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: isSender == true
+                                    ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomLeftRadius ??
+                                    ChatHelpers.cornerRadius)
+                                    : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomLeftRadius ??
+                                    ChatHelpers.cornerRadius),
+                                topRight: isSender == true
+                                    ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopRightRadius ??
+                                    0)
+                                    : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopRightRadius ??
+                                    ChatHelpers.cornerRadius),
+                                topLeft: isSender == true
+                                    ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderTopLeftRadius ??
+                                    ChatHelpers.cornerRadius)
+                                    : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverTopLeftRadius ??
+                                    0),
+                                bottomRight: isSender == true
+                                    ? Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxSenderBottomRightRadius ??
+                                    ChatHelpers.cornerRadius)
+                                    : Radius.circular(chatController.themeArguments?.borderRadiusArguments?.messageBoxReceiverBottomRightRadius ??
+                                    ChatHelpers.cornerRadius),
                               ),
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                      ChatHelpers.marginSizeSmall),
-                                  child: isAdding ?
-                                  Stack(
-                                    children: [
-                                      SizedBox(
-                                        height: 220,
-                                        width: 220,
-                                        child: cachedNetworkImage(
-                                            isProfile: false,
-                                            url: image),
-                                      ),
-                                      isVideo ?  SizedBox(
-                                        height: 220,
-                                        width: 220,
-                                        child: Center(
-                                          child: Container(
-                                            height: 35,
-                                            width: 35,
-                                            padding: const EdgeInsets.all(ChatHelpers.marginSizeExtraSmall),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: ChatHelpers.black.withOpacity(.4)
-                                            ),
-                                            child: const Icon(Icons.play_arrow,color: ChatHelpers.white,),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 220,
+                                  width: 220,
+                                  margin: const EdgeInsets.all(
+                                      ChatHelpers.marginSizeExtraSmall),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        ChatHelpers.marginSizeDefault),
+                                    color: isSender == true
+                                        ? chatController
+                                        .themeArguments
+                                        ?.colorArguments
+                                        ?.senderMessageBoxColor ??
+                                        ChatHelpers.mainColor
+                                        : chatController
+                                        .themeArguments
+                                        ?.colorArguments
+                                        ?.receiverMessageBoxColor ??
+                                        ChatHelpers.backcolor,
+                                  ),
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          ChatHelpers.marginSizeSmall),
+                                      child: isAdding ?
+                                      Stack(
+                                        children: [
+                                          SizedBox(
+                                            height: 220,
+                                            width: 220,
+                                            child: cachedNetworkImage(
+                                                isProfile: false,
+                                                url: image),
                                           ),
-                                        ),
-                                      )  : const SizedBox()
-                                    ],
-                                  ) : Stack(
+                                          isVideo ?  SizedBox(
+                                            height: 220,
+                                            width: 220,
+                                            child: Center(
+                                              child: Container(
+                                                height: 35,
+                                                width: 35,
+                                                padding: const EdgeInsets.all(ChatHelpers.marginSizeExtraSmall),
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: ChatHelpers.black.withOpacity(.4)
+                                                ),
+                                                child: const Icon(Icons.play_arrow,color: ChatHelpers.white,),
+                                              ),
+                                            ),
+                                          )  : const SizedBox()
+                                        ],
+                                      ) : Stack(
+                                        children: [
+                                          Image.file(
+                                            File(image),
+                                            height: 220,
+                                            width: 220,
+                                            fit: BoxFit.fill,
+                                          ),
+                                          const SizedBox(
+                                            height: 220,
+                                            width: 220,
+                                            child: Center(
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                          )
+                                        ],
+                                      )),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: ChatHelpers.marginSizeSmall),
+                                  margin: const EdgeInsets.only(
+                                      bottom: ChatHelpers.marginSizeExtraSmall),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Image.file(
-                                        File(image),
-                                        height: 220,
-                                        width: 220,
-                                        fit: BoxFit.fill,
+                                      imageMessage.isEmpty || imageMessage == ""
+                                          ? const SizedBox()
+                                          : Flexible(
+                                        child: Text(
+                                          imageMessage,
+                                          textAlign: TextAlign.start,
+                                          style: chatController.themeArguments?.styleArguments?.messageTextStyle ??
+                                              ChatHelpers.instance.styleRegular(
+                                                  ChatHelpers.fontSizeDefault,
+                                                  isSender == true
+                                                      ? chatController
+                                                      .themeArguments
+                                                      ?.colorArguments
+                                                      ?.senderMessageTextColor ??
+                                                      ChatHelpers
+                                                          .white
+                                                      : chatController
+                                                      .themeArguments
+                                                      ?.colorArguments
+                                                      ?.receiverMessageTextColor ??
+                                                      ChatHelpers
+                                                          .black),
+                                          softWrap: true,
+                                        ),
                                       ),
                                       const SizedBox(
-                                        height: 220,
-                                        width: 220,
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
+                                        height:
+                                        ChatHelpers.marginSizeExtraSmall,
+                                      ),
+                                      Container(
+                                        alignment: isSender
+                                            ? Alignment.centerRight
+                                            : Alignment.centerLeft,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: ChatHelpers
+                                                .marginSizeExtraSmall),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.end,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Text(time,
+                                                  textAlign: TextAlign.start,
+                                                  style: chatController
+                                                      .themeArguments
+                                                      ?.styleArguments
+                                                      ?.messagesTimeTextStyle ??
+                                                      ChatHelpers.instance.styleLight(
+                                                          ChatHelpers
+                                                              .fontSizeExtraSmall,
+                                                          isSender == true
+                                                              ? chatController
+                                                              .themeArguments
+                                                              ?.colorArguments
+                                                              ?.senderMessageTextColor ??
+                                                              ChatHelpers
+                                                                  .white
+                                                              : chatController
+                                                              .themeArguments
+                                                              ?.colorArguments
+                                                              ?.receiverMessageTextColor ??
+                                                              ChatHelpers
+                                                                  .black)),
+                                            ),
+                                            const SizedBox(
+                                              width: ChatHelpers
+                                                  .marginSizeExtraSmall,
+                                            ),
+                                            isSender == true
+                                                ? Image.asset(
+                                                ChatHelpers.instance
+                                                    .doubleTickImage,
+                                                height: 15,
+                                                width: 15,
+                                              package: 'chat_component',
+                                                color: isSeen
+                                                    ? chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.tickSeenColor ??
+                                                    ChatHelpers
+                                                        .backcolor
+                                                    : chatController
+                                                    .themeArguments
+                                                    ?.colorArguments
+                                                    ?.tickUnSeenColor ??
+                                                    ChatHelpers.grey,
+                                                )
+                                                : const SizedBox()
+                                          ],
                                         ),
-                                      )
+                                      ),
                                     ],
-                                  )),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: ChatHelpers.marginSizeSmall),
-                              margin: const EdgeInsets.only(
-                                  bottom: ChatHelpers.marginSizeExtraSmall),
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  imageMessage.isEmpty || imageMessage == ""
-                                      ? const SizedBox()
-                                      : Flexible(
-                                    child: Text(
-                                      imageMessage,
-                                      textAlign: TextAlign.start,
-                                      style: chatController.themeArguments?.styleArguments?.messageTextStyle ??
-                                          ChatHelpers.instance.styleRegular(
-                                              ChatHelpers.fontSizeDefault,
-                                              isSender == true
-                                                  ? chatController
-                                                  .themeArguments
-                                                  ?.colorArguments
-                                                  ?.senderMessageTextColor ??
-                                                  ChatHelpers
-                                                      .white
-                                                  : chatController
-                                                  .themeArguments
-                                                  ?.colorArguments
-                                                  ?.receiverMessageTextColor ??
-                                                  ChatHelpers
-                                                      .black),
-                                      softWrap: true,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height:
-                                    ChatHelpers.marginSizeExtraSmall,
-                                  ),
-                                  Container(
-                                    alignment: isSender
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: ChatHelpers
-                                            .marginSizeExtraSmall),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.end,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Flexible(
-                                          child: Text(time,
-                                              textAlign: TextAlign.start,
-                                              style: chatController
-                                                  .themeArguments
-                                                  ?.styleArguments
-                                                  ?.messagesTimeTextStyle ??
-                                                  ChatHelpers.instance.styleLight(
-                                                      ChatHelpers
-                                                          .fontSizeExtraSmall,
-                                                      isSender == true
-                                                          ? chatController
-                                                          .themeArguments
-                                                          ?.colorArguments
-                                                          ?.senderMessageTextColor ??
-                                                          ChatHelpers
-                                                              .white
-                                                          : chatController
-                                                          .themeArguments
-                                                          ?.colorArguments
-                                                          ?.receiverMessageTextColor ??
-                                                          ChatHelpers
-                                                              .black)),
-                                        ),
-                                        const SizedBox(
-                                          width: ChatHelpers
-                                              .marginSizeExtraSmall,
-                                        ),
-                                        isSender == true
-                                            ? Image.asset(
-                                            ChatHelpers.instance
-                                                .doubleTickImage,
-                                            height: 15,
-                                            width: 15,
-                                          package: 'chat_component',
-                                            color: isSeen
-                                                ? chatController
-                                                .themeArguments
-                                                ?.colorArguments
-                                                ?.tickSeenColor ??
-                                                ChatHelpers
-                                                    .backcolor
-                                                : chatController
-                                                .themeArguments
-                                                ?.colorArguments
-                                                ?.tickUnSeenColor ??
-                                                ChatHelpers.grey,
-                                            )
-                                            : const SizedBox()
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                          ),
+                              Positioned(
+                            top: 5,
+                            right: isSender ? 0 : null,
+                            left: isSender ? null : 0,
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.rotationY(isSender ? math.pi : 0), // flip the bubble shape for receiver side
+                              child: CustomPaint(
+                                size: const Size(20, 20),
+                                painter: CustomBubbleShape(isSender == true
+                                    ? chatController.themeArguments?.colorArguments
+                                    ?.senderMessageBoxColor ??
+                                    ChatHelpers.mainColor
+                                    : chatController.themeArguments?.colorArguments
+                                    ?.receiverMessageBoxColor ??
+                                    ChatHelpers.backcolor),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 5,
-                      right: isSender ? 0 : null,
-                      left: isSender ? null : 0,
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(isSender ? math.pi : 0), // flip the bubble shape for receiver side
-                        child: CustomPaint(
-                          size: const Size(20, 20),
-                          painter: CustomBubbleShape(isSender == true
-                              ? chatController.themeArguments?.colorArguments
-                              ?.senderMessageBoxColor ??
-                              ChatHelpers.mainColor
-                              : chatController.themeArguments?.colorArguments
-                              ?.receiverMessageBoxColor ??
-                              ChatHelpers.backcolor),
-                        ),
+                          )
+                        ],
                       ),
                     ),
                     chatController.chatArguments.reactionsEnable == true ?
